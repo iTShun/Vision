@@ -18,25 +18,25 @@
 #include "OpenThreads/Exports.h"
 
 #if defined(_OPENTHREADS_ATOMIC_USE_BSD_ATOMIC)
-#   include <libkern/OSAtomic.h>
-#   define _OPENTHREADS_ATOMIC_USE_LIBRARY_ROUTINES
+# include <libkern/OSAtomic.h>
+# define _OPENTHREADS_ATOMIC_USE_LIBRARY_ROUTINES
 #elif defined(_OPENTHREADS_ATOMIC_USE_GCC_BUILTINS) && defined(__i386__)
-#   define _OPENTHREADS_ATOMIC_USE_LIBRARY_ROUTINES
+# define _OPENTHREADS_ATOMIC_USE_LIBRARY_ROUTINES
 #elif defined(_OPENTHREADS_ATOMIC_USE_WIN32_INTERLOCKED)
-#   define _OPENTHREADS_ATOMIC_USE_LIBRARY_ROUTINES
+# define _OPENTHREADS_ATOMIC_USE_LIBRARY_ROUTINES
 #elif defined(_OPENTHREADS_ATOMIC_USE_SUN)
-#   include <atomic.h>
-#   include "Mutex.h"
-#   include "ScopedLock.h"
+# include <atomic.h>
+# include "Mutex.h"
+# include "ScopedLock.h"
 #elif defined(_OPENTHREADS_ATOMIC_USE_MUTEX)
-#   include "Mutex.h"
-#   include "ScopedLock.h"
+# include "Mutex.h"
+# include "ScopedLock.h"
 #endif
 
 #if defined(_OPENTHREADS_ATOMIC_USE_LIBRARY_ROUTINES)
-#   define _OPENTHREADS_ATOMIC_INLINE
+#define _OPENTHREADS_ATOMIC_INLINE
 #else
-#   define _OPENTHREADS_ATOMIC_INLINE inline
+#define _OPENTHREADS_ATOMIC_INLINE inline
 #endif
 
 namespace OpenThreads {

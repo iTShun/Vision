@@ -11,83 +11,92 @@
  * OpenSceneGraph Public License for more details.
 */
 
-
 //
-// PThreadPrivateData.h - Private data structure for Thread
+// Win32PrivateData.h - Private data structure for Thread
 // ~~~~~~~~~~~~~~~~~~~~~
+#ifndef _Win32PRIVATEDATA_H_
+#define _Win32PRIVATEDATA_H_
 
-#ifndef _PTHREADPRIVATEDATA_H_
-#define _PTHREADPRIVATEDATA_H_
-
-#include <pthread.h>
 #include "OpenThreads/Thread.h"
 #include "OpenThreads/Block.h"
-#include "OpenThreads/Atomic.h"
+#include "HandleHolder.h"
 
 namespace OpenThreads {
 
-class PThreadPrivateData {
-
+    class Win32ThreadPrivateData {
     //-------------------------------------------------------------------------
     // We're friendly to Thread, so it can use our data.
     //
     friend class Thread;
-
     //-------------------------------------------------------------------------
-    // We're friendly to PThreadPrivateActions, so it can get at some
+    // We're friendly to Win32PrivateActions, so it can get at some
     // variables.
     //
     friend class ThreadPrivateActions;
 
 private:
 
-    PThreadPrivateData()
-    {
-        stackSize = 0;
-        stackSizeLocked = false;
-        idSet = false;
-        setRunning(false);
-        isCanceled = false;
-        tid = 0;
-        uniqueId = nextId;
-        nextId++;
-        threadPriority = Thread::THREAD_PRIORITY_DEFAULT;
-        threadPolicy = Thread::THREAD_SCHEDULE_DEFAULT;
-    };
+    Win32ThreadPrivateData();
+    ~Win32ThreadPrivateData();
 
-    virtual ~PThreadPrivateData() {};
-
-    volatile unsigned int stackSize;
-
-    volatile bool stackSizeLocked;
-
-    void setRunning(bool flag) { _isRunning.exchange(flag); }
-    bool isRunning() const { return _isRunning!=0; }
-
-    Atomic _isRunning;
+    size_t stackSize;
+    bool isRunning;
 
     Block threadStartedBlock;
 
-    volatile bool isCanceled;
+    int  cancelMode; // 0 - deffered (default) 1-asynch 2-disabled
 
-    volatile bool idSet;
+    bool detached;
 
-    volatile Thread::ThreadPriority threadPriority;
+    Thread::ThreadPriority threadPriority;
 
-    volatile Thread::ThreadPolicy threadPolicy;
+    Thread::ThreadPolicy threadPolicy;
 
-    pthread_t tid;
+    HandleHolder tid;
 
-    volatile int uniqueId;
+    int uniqueId;
 
     Affinity affinity;
 
-    static int nextId;
+public:
 
-    static pthread_key_t s_tls_key;
+    HandleHolder cancelEvent;
+
+    struct TlsHolder{ // thread local storage slot
+        DWORD getId()
+        {
+            if (!initialized) {
+                ID = TlsAlloc();
+                initialized = true;
+            }
+            return ID;
+        }
+        TlsHolder() : ID(TLS_OUT_OF_INDEXES), initialized(false) {}
+        ~TlsHolder(){
+            if (initialized)
+                TlsFree(ID);
+            ID = TLS_OUT_OF_INDEXES;
+        }
+    private:
+        DWORD ID;
+        bool initialized;
+    };
+
+    static TlsHolder TLS;
 
 };
 
+DWORD cooperativeWait(HANDLE waitHandle, unsigned long timeout);
+
+
 }
 
+
+
+
+
+
 #endif // !_PTHREADPRIVATEDATA_H_
+
+
+

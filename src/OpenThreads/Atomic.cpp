@@ -14,11 +14,11 @@
 #include "OpenThreads/Atomic.h"
 
 #if defined(_OPENTHREADS_ATOMIC_USE_WIN32_INTERLOCKED)
-#   include <windows.h>
-#   include <intrin.h>
-#   pragma intrinsic(_InterlockedAnd)
-#   pragma intrinsic(_InterlockedOr)
-#   pragma intrinsic(_InterlockedXor)
+#	include <windows.h>
+#	include <intrin.h>
+#	pragma intrinsic(_InterlockedAnd)
+#	pragma intrinsic(_InterlockedOr)
+#	pragma intrinsic(_InterlockedXor)
 #endif
 
 namespace OpenThreads {
