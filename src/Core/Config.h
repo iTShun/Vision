@@ -1,5 +1,5 @@
-#ifndef Config_h
-#define Config_h
+#ifndef CoreConfig_h
+#define CoreConfig_h
 
 //#define NOTIFY_DISABLED
 //#define USE_FLOAT_MATRIX
@@ -13,4 +13,4 @@
 
 #define INIT_SINGLETON_PROXY(ProxyName, Func) static struct ProxyName{ ProxyName() { Func; } } s_##ProxyName;
 
-#endif /* Config_h */
+#endif /* CoreConfig_h */

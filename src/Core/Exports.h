@@ -1,10 +1,10 @@
-#ifndef Exports_h
-#define Exports_h
+#ifndef CoreExports_h
+#define CoreExports_h
 
 #include "Core/Config.h"
 
 // disable VisualStudio warnings
-#if defined(_MSC_VER) && defined(OSG_DISABLE_MSVC_WARNINGS)
+#if defined(_MSC_VER) && defined(DISABLE_MSVC_WARNINGS)
 #   pragma warning( disable : 4244 )
 #   pragma warning( disable : 4251 )
 #   pragma warning( disable : 4275 )
@@ -45,4 +45,4 @@
 #   endif
 #endif
 
-#endif /* Exports_h */
+#endif /* CoreExports_h */

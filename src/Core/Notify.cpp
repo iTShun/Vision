@@ -195,7 +195,7 @@ void core::StandardNotifyHandler::notify(core::NotifySeverity severity, const ch
 #endif
 #   include <windows.h>
 
-void WinDebugNotifyHandler::notify(core::NotifySeverity severity, const char *message)
+void core::WinDebugNotifyHandler::notify(core::NotifySeverity severity, const char *message)
 {
     OutputDebugStringA(message);
 }
