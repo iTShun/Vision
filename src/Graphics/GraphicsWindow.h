@@ -1,62 +1,85 @@
 #ifndef GraphicsWindow_h
 #define GraphicsWindow_h
 
-#include "Graphics/GraphicsContext.h"
+#include "Graphics/Exports.h"
+#include "Core/Object.h"
 
 namespace graphics {
 
-struct WindowHandle { uint16_t idx; };
-
 /** Base class for providing Windowing API agnostic access to creating and managing graphics window and events.
-* Note, the GraphicsWindow is subclassed from graphics::GraphicsContext, and to provide an implementation you'll need to implement its
-* range of pure virtual functions, you'll find these all have naming convention methodNameImplementation(..).
-* GraphicsWindow adds the event queue on top of the GraphicsContext, thereby adding a mechanism for adapting Windowing events
-* as well as basics graphics context work, you should wire up custom GraphicsWindowImplementation to push their events through
-* into the EventQueue. */
-class API_GRAPHICS GraphicsWindow : public GraphicsContext
+ */
+class API_GRAPHICS GraphicsWindow : public core::Object
 {
 public:
-
-	GraphicsWindow();
 
 	virtual bool isSameKindAs(const Object* object) const { return dynamic_cast<const GraphicsWindow*>(object) != 0; }
 	virtual const char* libraryName() const { return "graphics"; }
 	virtual const char* className() const { return "GraphicsWindow"; }
 
-	virtual bool createWindow(int x, int y, int width, int height, const char* title = "") { return false; }
+	typedef uint16_t WindowHandle;
 
-	virtual void destroyWindow() {}
+	inline WindowHandle getWindowHandle() const { return _handle; }
 
-	virtual void setWindowPos(int x, int y) {}
+	static GraphicsWindow * createGraphicsWindow(int x, int y, int width, int height, const char* title = "");
 
-	virtual void setWindowSize(int width, int height) {}
+	//virtual bool createWindow(int x, int y, int width, int height, const char* title = "") { return false; }
 
-	/** Set the name of the window */
-	virtual void setWindowName(const std::string& /*name*/) { LOG_NOTICE << "GraphicsWindow::setWindowName(..) not implemented." << std::endl; }
+	//virtual void destroyWindow() {}
 
-	/** Return the name of the window */
-	virtual std::string getWindowName() { return ""; }
+	//virtual void setWindowPos(int x, int y) {}
 
-	virtual void toggleFullscreen() {}
+	//virtual void setWindowSize(int width, int height) {}
 
-	virtual void setMouseLock(bool lock) {}
+	///** Set the name of the window */
+	//virtual void setWindowName(const std::string& /*name*/) { LOG_NOTICE << "GraphicsWindow::setWindowName(..) not implemented." << std::endl; }
 
-	virtual void setCurrentDir(const char* dir) {}
+	///** Return the name of the window */
+	//virtual std::string getWindowName() { return ""; }
 
-	/** Get focus.*/
-	virtual void grabFocus() { LOG_NOTICE << "GraphicsWindow::grabFocus(..) not implemented." << std::endl; }
+	//virtual void toggleFullscreen() {}
 
-	/** Get focus on if the pointer is in this window.*/
-	virtual void grabFocusIfPointerInWindow() { LOG_NOTICE << "GraphicsWindow::grabFocusIfPointerInWindow(..) not implemented." << std::endl; }
+	//virtual void setMouseLock(bool lock) {}
+
+	//virtual void setCurrentDir(const char* dir) {}
+
+	///** Get focus.*/
+	//virtual void grabFocus() { LOG_NOTICE << "GraphicsWindow::grabFocus(..) not implemented." << std::endl; }
+
+	///** Get focus on if the pointer is in this window.*/
+	//virtual void grabFocusIfPointerInWindow() { LOG_NOTICE << "GraphicsWindow::grabFocusIfPointerInWindow(..) not implemented." << std::endl; }
 
 public:
 
 	/** Return whether a valid and usable GraphicsContext has been created.*/
-	virtual bool valid() const { LOG_NOTICE << "GraphicsWindow::valid() not implemented." << std::endl; return _handle.idx != UINT16_MAX; }
+	virtual bool valid() const { LOG_NOTICE << "GraphicsWindow::valid() not implemented." << std::endl; return _handle != UINT16_MAX; }
+
+	virtual bool checkEvents() { return false; }
 
 protected:
 
-	WindowHandle _handle;
+	GraphicsWindow();
+
+	GraphicsWindow(const GraphicsWindow&, const core::CopyOp&);
+
+	virtual Object* cloneType() const { return 0; }
+	virtual Object* clone(const core::CopyOp&) const { return 0; }
+
+	WindowHandle	_handle;
+
+	std::string		_windowName;
+
+	int				_x;
+
+	int				_y;
+
+	int				_width;
+
+	int				_height;
+
+	float			_aspectRatio;
+
+	double			_refreshRate;
+
 };
 
 }

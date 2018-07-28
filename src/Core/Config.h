@@ -13,4 +13,12 @@
 
 #define INIT_SINGLETON_PROXY(ProxyName, Func) static struct ProxyName{ ProxyName() { Func; } } s_##ProxyName;
 
+#ifndef MAX
+#	define MAX(a, b) a > b ? a : b
+#endif
+
+#ifndef MIN
+#	define MIN(a, b) a > b ? b : a
+#endif
+
 #endif /* CoreConfig_h */

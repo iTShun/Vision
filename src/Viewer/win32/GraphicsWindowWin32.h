@@ -16,45 +16,62 @@ public:
 
 	virtual ~GraphicsWindowWin32();
 
+	virtual bool init(const char* title, int x, int y, int width, int height);
+
+	virtual void adjustWindow(int width, int height, bool windowFrame);
+
+	virtual void clearWindow();
+
+	virtual void closeWindow();
+
+	/** Handle a native (Win32) windowing event as received from the system */
+	virtual LRESULT handleNativeWindowingEvent(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+
 public:
 
 	virtual bool isSameKindAs(const Object* object) const { return dynamic_cast<const GraphicsWindowWin32*>(object) != 0; }
 	virtual const char* libraryName() const { return "viewer"; }
 	virtual const char* className() const { return "GraphicsWindowWin32"; }
 
-public:
-
-	virtual bool createWindow(int x, int y, int width, int height, const char* title = "");
-
-	virtual void destroyWindow();
-
-	virtual void setWindowPos(int x, int y);
-
-	virtual void setWindowSize(int width, int height);
-
-	/** Set the name of the window */
-	virtual void setWindowName(const std::string& /*name*/);
-
-	/** Return the name of the window */
-	virtual std::string getWindowName() { return _title; }
-
-	virtual void toggleFullscreen();
-
-	virtual void setMouseLock(bool lock);
-
-	virtual void setCurrentDir(const char* dir);
-
-	/** Get focus.*/
-	virtual void grabFocus();
-
-	/** Get focus on if the pointer is in this window.*/
-	virtual void grabFocusIfPointerInWindow();
-
+	virtual bool checkEvents();
 
 protected:
 
-	std::string		_title;
-	WNDPROC         _windowProcedure;
+	bool registerWindowClasses();
+
+	void unregisterWindowClasses();
+
+	// Display devices present in the system
+	typedef std::vector<DISPLAY_DEVICE> DisplayDevices;
+
+	void enumerateDisplayDevices(DisplayDevices& displayDevices) const;
+
+	void destroyWindow(bool deleteNativeWindow = true);
+
+protected:
+
+	HWND			_hwnd;
+
+	RECT			_rect;
+
+	DWORD			_style;
+
+	int				_oldWidth;
+
+	int				_oldHeight;
+
+	int				_frameWidth;
+
+	int				_frameHeight;
+
+	bool			_windowClassesRegistered;
+
+	bool			_initialized;
+
+	bool			_closeWindow;
+
+	bool			_frame;
 };
 
 }
