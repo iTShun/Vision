@@ -71,6 +71,14 @@ namespace AppKit
         
         return false;
     }
+
+	int VideoDevice::AddVideoDisplay(VideoDisplay* display)
+	{
+		if (display)
+			Displays.push_back(display);
+
+		return Displays.size() - 1;
+	}
     
     void VideoDevice::Quit()
     {
@@ -101,7 +109,7 @@ namespace AppKit
             /* Pick up the primary display in the first pass, then get the rest */
             for (pass = 0; pass < 2; ++pass) {
                 for (i = 0; i < numDisplays; ++i) {
-                    VideoDisplay display;
+                    VideoDisplay *display = nullptr;
                     DisplayData *displaydata = nullptr;
                     DisplayMode mode;
                     CGDisplayModeRef moderef = NULL;
@@ -127,33 +135,31 @@ namespace AppKit
                         continue;
                     }
 
-                    displaydata = new DisplayData();
-                    if (!displaydata) {
-                        CGDisplayModeRelease(moderef);
+					display = new VideoDisplay();
+                    if (!display) {
+						CGDisplayModeRelease(moderef);
                         continue;
                     }
-                    displaydata->display = displays[i];
+                    MemSet(display, 0, sizeof(display));
+
+					display->Display = displays[i];
 
                     CVDisplayLinkCreateWithCGDisplay(displays[i], &link);
 
-                    MemSet(&display, 0, sizeof(display));
                     /* this returns a stddup'ed string */
-                    display.Name = (char *)Cocoa_GetDisplayName(displays[i]);
+                    display->Name = (char *)Cocoa_GetDisplayName(displays[i]);
                     if (!GetDisplayMode(moderef, link, &mode)) {
                         CVDisplayLinkRelease(link);
                         CGDisplayModeRelease(moderef);
-                        delete[] display.Name;
-                        delete displaydata;
+						delete display;
                         continue;
                     }
 
                     CVDisplayLinkRelease(link);
 
-                    display.DesktopMode = mode;
-                    display.CurrentMode = mode;
-                    display.DriverData = displaydata;
-//                    SDL_AddVideoDisplay(&display);
-                    delete[] display.Name;
+                    display->DesktopMode = mode;
+                    display->CurrentMode = mode;
+					AddVideoDisplay(display);
                 }
             }
             delete[] displays;
@@ -205,7 +211,7 @@ void CG_SetError(const char *prefix, CGDisplayErr result)
             break;
     }
     
-    DebugPrintf("%s: %s", prefix, error);
+    Log("%s: %s", prefix, error);
 }
 
 #define SDL_DEFINE_PIXELFORMAT(type, order, layout, bits, bytes) \
@@ -214,18 +220,13 @@ void CG_SetError(const char *prefix, CGDisplayErr result)
 
 bool GetDisplayMode(CGDisplayModeRef vidmode, CVDisplayLinkRef link, AppKit::DisplayMode *mode)
 {
-    AppKit::DisplayModeData *data = nullptr;
     int width = 0;
     int height = 0;
     int bpp = 0;
     int refreshRate = 0;
     CFStringRef fmt;
     
-    data = new AppKit::DisplayModeData();
-    if (!data) {
-        return false;
-    }
-    data->moderef = vidmode;
+	mode->ModeRef = vidmode;
     
     fmt = CGDisplayModeCopyPixelEncoding(vidmode);
     width = (int) CGDisplayModeGetWidth(vidmode);
@@ -275,7 +276,6 @@ bool GetDisplayMode(CGDisplayModeRef vidmode, CVDisplayLinkRef link, AppKit::Dis
     mode->Width = width;
     mode->Height = height;
     mode->RefreshRate = refreshRate;
-    mode->DriverData = data;
     return true;
 }
 
@@ -286,10 +286,11 @@ const char* Cocoa_GetDisplayName(CGDirectDisplayID displayID)
     const char* displayName = NULL;
     
     if ([localizedNames count] > 0) {
-        const char* str = [[localizedNames objectForKey:[[localizedNames allKeys] objectAtIndex:0]] UTF8String];
+		displayName = [[localizedNames objectForKey:[[localizedNames allKeys] objectAtIndex:0]] UTF8String];
+        /*const char* str = [[localizedNames objectForKey:[[localizedNames allKeys] objectAtIndex:0]] UTF8String];
         int len = StrLen(str) + 1;
         displayName = new char[len];
-        MemCopy((void*)displayName, str, len);
+        MemCopy((void*)displayName, str, len);*/
     }
     CFRelease(deviceInfo);
     return displayName;

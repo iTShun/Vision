@@ -1178,7 +1178,7 @@ namespace GenericKit
         wchar_t temp[3];
         
         unsigned byteOffset = 0;
-        while (byteOffset < str.Length())
+        while (byteOffset < str.Len())
         {
             wchar_t* dest = temp;
             String::EncodeUTF16(dest, str.NextUTF8Char(byteOffset));
@@ -1189,7 +1189,7 @@ namespace GenericKit
         
         byteOffset = 0;
         wchar_t* dest = Buffer;
-        while (byteOffset < str.Length())
+        while (byteOffset < str.Len())
             String::EncodeUTF16(dest, str.NextUTF8Char(byteOffset));
 #else
         Resize(str.LengthUTF8());

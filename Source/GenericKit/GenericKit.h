@@ -8,3 +8,5 @@
 #include "GenericKit/DefaultAllocator.h"
 #include "GenericKit/StringUtils.h"
 #include "GenericKit/String.h"
+
+#define Log(format, ...)  GenericKit::DebugPrintf(format "\n", ## __VA_ARGS__)

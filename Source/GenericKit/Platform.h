@@ -54,6 +54,13 @@
 #define PLATFORM_WINRT      0
 #define PLATFORM_XBOXONE    0
 
+// Debug mode
+#if defined(DEBUG) || defined(_DEBUG)
+#	define DEBUG_MODES	1
+#else
+#	define DEBUG_MODES	0
+#endif
+
 
 // http://sourceforge.net/apps/mediawiki/predef/index.php?title=Compilers
 #if defined(__clang__)
@@ -273,3 +280,11 @@
 		|| PLATFORM_WINRT      \
 		|| PLATFORM_XBOXONE    \
 		)
+
+// Visual Studio warnings
+#if CRT_MSVC
+#	pragma warning (disable: 4127) // condition expression is constant
+#	pragma warning (disable: 4201) // nonstandard extension used: nameless struct/union
+#	pragma warning (disable: 4505) // unreferenced local function has been removed (stb stuff)
+#	pragma warning (disable: 4996) // 'This function or variable may be unsafe': strcpy, strdup, sprintf, vsnprintf, sscanf, fopen
+#endif
