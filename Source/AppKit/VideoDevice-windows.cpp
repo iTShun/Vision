@@ -111,13 +111,13 @@ namespace AppKit
 	void VideoDevice::QuitModes()
 	{
 		std::vector<VideoDisplay*>::iterator iter = Displays.begin();
-		VideoDisplay* ret = nullptr;
+		VideoDisplay* display = nullptr;
 
 		while (iter != Displays.end())
 		{
-			ret = *iter;
+			display = *iter;
 			Displays.erase(iter);
-			delete ret;
+			delete display;
 			iter = Displays.begin();
 		}
 	}

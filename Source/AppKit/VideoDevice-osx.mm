@@ -17,8 +17,10 @@ using namespace GenericKit;
 #import <AvailabilityMacros.h>
 
 static void CG_SetError(const char *prefix, CGDisplayErr result);
+static void ToggleMenuBar(const BOOL show);
 static bool GetDisplayMode(CGDisplayModeRef vidmode, CVDisplayLinkRef link, AppKit::DisplayMode *mode);
-static const char* Cocoa_GetDisplayName(CGDirectDisplayID displayID);
+static const char* GetDisplayName(CGDirectDisplayID displayID);
+static int SetDisplayMode(AppKit::VideoDisplay* display, AppKit::DisplayMode* mode);
 
 namespace AppKit
 {
@@ -82,7 +84,7 @@ namespace AppKit
     
     void VideoDevice::Quit()
     {
-        
+        QuitModes();
     }
     
     bool VideoDevice::InitModes()
@@ -147,7 +149,7 @@ namespace AppKit
                     CVDisplayLinkCreateWithCGDisplay(displays[i], &link);
 
                     /* this returns a stddup'ed string */
-                    display->Name = (char *)Cocoa_GetDisplayName(displays[i]);
+                    display->Name = (char *)GetDisplayName(displays[i]);
                     if (!GetDisplayMode(moderef, link, &mode)) {
                         CVDisplayLinkRelease(link);
                         CGDisplayModeRelease(moderef);
@@ -169,6 +171,28 @@ namespace AppKit
         
         return false;
     }}
+    
+    void VideoDevice::QuitModes()
+    {
+        std::vector<VideoDisplay*>::iterator iter = Displays.begin();
+        VideoDisplay* display = nullptr;
+        
+        while (iter != Displays.end())
+        {
+            display = *iter;
+            Displays.erase(iter);
+            
+            if (display->CurrentMode.ModeRef != display->DesktopMode.ModeRef)
+            {
+                SetDisplayMode(display, &display->DesktopMode);
+            }
+            
+            CGDisplayModeRelease(display->DesktopMode.ModeRef);
+            
+            delete display;
+            iter = Displays.begin();
+        }
+    }
 }
 
 void CG_SetError(const char *prefix, CGDisplayErr result)
@@ -212,6 +236,22 @@ void CG_SetError(const char *prefix, CGDisplayErr result)
     }
     
     Log("%s: %s", prefix, error);
+}
+
+void ToggleMenuBar(const BOOL show)
+{
+    /* !!! FIXME: keep an eye on this.
+     * ShowMenuBar/HideMenuBar is officially unavailable for 64-bit binaries.
+     *  It happens to work, as of 10.7, but we're going to see if
+     *  we can just simply do without it on newer OSes...
+     */
+#if (MAC_OS_X_VERSION_MIN_REQUIRED < 1070) && !defined(__LP64__)
+    if (show) {
+        ShowMenuBar();
+    } else {
+        HideMenuBar();
+    }
+#endif
 }
 
 #define SDL_DEFINE_PIXELFORMAT(type, order, layout, bits, bytes) \
@@ -269,8 +309,6 @@ bool GetDisplayMode(CGDisplayModeRef vidmode, CVDisplayLinkRef link, AppKit::Dis
             break;
         case 8: /* We don't support palettized modes now */
         default: /* Totally unrecognizable bit depth. */
-            delete data;
-            data = nullptr;
             return false;
     }
     mode->Width = width;
@@ -279,7 +317,7 @@ bool GetDisplayMode(CGDisplayModeRef vidmode, CVDisplayLinkRef link, AppKit::Dis
     return true;
 }
 
-const char* Cocoa_GetDisplayName(CGDirectDisplayID displayID)
+const char* GetDisplayName(CGDirectDisplayID displayID)
 {
     CFDictionaryRef deviceInfo = IODisplayCreateInfoDictionary(CGDisplayIOServicePort(displayID), kIODisplayOnlyPreferredName);
     NSDictionary *localizedNames = [(NSDictionary *)deviceInfo objectForKey:[NSString stringWithUTF8String:kDisplayProductName]];
@@ -287,13 +325,77 @@ const char* Cocoa_GetDisplayName(CGDirectDisplayID displayID)
     
     if ([localizedNames count] > 0) {
 		displayName = [[localizedNames objectForKey:[[localizedNames allKeys] objectAtIndex:0]] UTF8String];
-        /*const char* str = [[localizedNames objectForKey:[[localizedNames allKeys] objectAtIndex:0]] UTF8String];
-        int len = StrLen(str) + 1;
-        displayName = new char[len];
-        MemCopy((void*)displayName, str, len);*/
     }
     CFRelease(deviceInfo);
     return displayName;
+}
+
+int SetDisplayMode(AppKit::VideoDisplay* display, AppKit::DisplayMode* mode)
+{
+    CGDisplayFadeReservationToken fade_token = kCGDisplayFadeReservationInvalidToken;
+    CGError result;
+    
+    /* Fade to black to hide resolution-switching flicker */
+    if (CGAcquireDisplayFadeReservation(5, &fade_token) == kCGErrorSuccess) {
+        CGDisplayFade(fade_token, 0.3, kCGDisplayBlendNormal, kCGDisplayBlendSolidColor, 0.0, 0.0, 0.0, TRUE);
+    }
+    
+    if (mode->ModeRef == display->DesktopMode.ModeRef) {
+        /* Restoring desktop mode */
+        CGDisplaySetDisplayMode(display->Display, mode->ModeRef, NULL);
+        
+        if (CGDisplayIsMain(display->Display)) {
+            CGReleaseAllDisplays();
+        } else {
+            CGDisplayRelease(display->Display);
+        }
+        
+        if (CGDisplayIsMain(display->Display)) {
+            ToggleMenuBar(YES);
+        }
+    } else {
+        /* Put up the blanking window (a window above all other windows) */
+        if (CGDisplayIsMain(display->Display)) {
+            /* If we don't capture all displays, Cocoa tries to rearrange windows... *sigh* */
+            result = CGCaptureAllDisplays();
+        } else {
+            result = CGDisplayCapture(display->Display);
+        }
+        if (result != kCGErrorSuccess) {
+            CG_SetError("CGDisplayCapture()", result);
+            goto ERR_NO_CAPTURE;
+        }
+        
+        /* Do the physical switch */
+        result = CGDisplaySetDisplayMode(display->Display, mode->ModeRef, NULL);
+        if (result != kCGErrorSuccess) {
+            CG_SetError("CGDisplaySwitchToMode()", result);
+            goto ERR_NO_SWITCH;
+        }
+        
+        /* Hide the menu bar so it doesn't intercept events */
+        if (CGDisplayIsMain(display->Display)) {
+            ToggleMenuBar(NO);
+        }
+    }
+    
+    /* Fade in again (asynchronously) */
+    if (fade_token != kCGDisplayFadeReservationInvalidToken) {
+        CGDisplayFade(fade_token, 0.5, kCGDisplayBlendSolidColor, kCGDisplayBlendNormal, 0.0, 0.0, 0.0, FALSE);
+        CGReleaseDisplayFadeReservation(fade_token);
+    }
+    
+    return 0;
+    
+    /* Since the blanking window covers *all* windows (even force quit) correct recovery is crucial */
+ERR_NO_SWITCH:
+    CGDisplayRelease(display->Display);
+ERR_NO_CAPTURE:
+    if (fade_token != kCGDisplayFadeReservationInvalidToken) {
+        CGDisplayFade (fade_token, 0.5, kCGDisplayBlendSolidColor, kCGDisplayBlendNormal, 0.0, 0.0, 0.0, FALSE);
+        CGReleaseDisplayFadeReservation(fade_token);
+    }
+    return -1;
 }
 
 #endif // PLATFORM_OSX

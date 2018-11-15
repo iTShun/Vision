@@ -4,6 +4,10 @@
 
 #if PLATFORM_WINDOWS
 #	include <Windows.h>
+#elif PLATFORM_OSX
+/* We need this for CVDisplayLinkGetNominalOutputVideoRefreshPeriod */
+#   include <CoreVideo/CVBase.h>
+#   include <CoreVideo/CVDisplayLink.h>
 #endif // PLATFORM_
 
 namespace AppKit
