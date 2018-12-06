@@ -1,0 +1,507 @@
+#include "Private/UnitTests/LSUtilityTestSuite.h"
+#include "Private/UnitTests/LSFileSystemTestSuite.h"
+#include "General/LSOctree.h"
+#include "General/LSBitfield.h"
+#include "General/LSDynArray.h"
+#include "Math/LSComplex.h"
+
+namespace ls
+{
+	struct DebugOctreeElem
+	{
+		AABox box;
+		mutable OctreeElementId octreeId;
+	};
+
+	struct DebugOctreeData
+	{
+		Vector<DebugOctreeElem> elements;
+	};
+
+	struct DebugOctreeOptions
+	{
+		enum { LoosePadding = 16 };
+		enum { MinElementsPerNode = 8 };
+		enum { MaxElementsPerNode = 16 };
+		enum { MaxDepth = 12};
+
+		static simd::AABox getBounds(UINT32 elem, void* context)
+		{
+			DebugOctreeData* octreeData = (DebugOctreeData*)context;
+			return simd::AABox(octreeData->elements[elem].box);
+		}
+
+		static void setElementId(UINT32 elem, const OctreeElementId& id, void* context)
+		{
+			DebugOctreeData* octreeData = (DebugOctreeData*)context;
+			octreeData->elements[elem].octreeId = id;
+		}
+	};
+
+	typedef Octree<UINT32, DebugOctreeOptions> DebugOctree;
+	void UtilityTestSuite::startUp()
+	{
+		SPtr<TestSuite> fileSystemTests = create<FileSystemTestSuite>();
+		add(fileSystemTests);
+	}
+
+	void UtilityTestSuite::shutDown()
+	{
+	}
+
+	UtilityTestSuite::UtilityTestSuite()
+	{
+		LS_ADD_TEST(UtilityTestSuite::testOctree);
+		LS_ADD_TEST(UtilityTestSuite::testBitfield)
+		LS_ADD_TEST(UtilityTestSuite::testSmallVector)
+		LS_ADD_TEST(UtilityTestSuite::testDynArray)
+		LS_ADD_TEST(UtilityTestSuite::testComplex)
+	}
+
+	void UtilityTestSuite::testBitfield()
+	{
+		static constexpr UINT32 COUNT = 100;
+		static constexpr UINT32 EXTRA_COUNT = 32;
+
+		Bitfield bitfield(true, COUNT);
+
+		// Basic iteration
+		UINT32 i = 0;
+		for (auto iter : bitfield)
+		{
+			LS_TEST_ASSERT(iter == true)
+				i++;
+		}
+
+		UINT32 curCount = COUNT;
+		LS_TEST_ASSERT(i == curCount);
+
+		// Dynamic additon
+		bitfield.add(false);
+		bitfield.add(false);
+		bitfield.add(true);
+		bitfield.add(false);
+		curCount += 4;
+
+		// Realloc
+		curCount += EXTRA_COUNT;
+		for (uint32_t j = 0; j < 32; j++)
+			bitfield.add(false);
+
+		LS_TEST_ASSERT(bitfield.size() == curCount);
+
+		LS_TEST_ASSERT(bitfield[COUNT + 0] == false);
+		LS_TEST_ASSERT(bitfield[COUNT + 1] == false);
+		LS_TEST_ASSERT(bitfield[COUNT + 2] == true);
+		LS_TEST_ASSERT(bitfield[COUNT + 3] == false);
+
+		// Modify during iteration
+		i = 0;
+		for (auto iter : bitfield)
+		{
+			if (i >= 50 && i <= 70)
+				iter = false;
+
+			i++;
+		}
+
+		// Modify directly using []
+		bitfield[5] = false;
+		bitfield[6] = false;
+
+		for (UINT32 j = 50; j < 70; j++)
+			LS_TEST_ASSERT(bitfield[j] == false);
+
+		LS_TEST_ASSERT(bitfield[5] == false);
+		LS_TEST_ASSERT(bitfield[6] == false);
+
+		// Removal
+		bitfield.remove(10);
+		bitfield.remove(10);
+		curCount -= 2;
+
+		for (UINT32 j = 48; j < 68; j++)
+			LS_TEST_ASSERT(bitfield[j] == false);
+
+		LS_TEST_ASSERT(bitfield[5] == false);
+		LS_TEST_ASSERT(bitfield[6] == false);
+
+		LS_TEST_ASSERT(bitfield.size() == curCount);
+
+		// Find
+		LS_TEST_ASSERT(bitfield.find(true) == 0);
+		LS_TEST_ASSERT(bitfield.find(false) == 5);
+	}
+
+	void UtilityTestSuite::testOctree()
+	{
+		DebugOctreeData octreeData;
+		DebugOctree octree(Vector3::ZERO, 800.0f, &octreeData);
+
+		struct SizeAndCount
+		{
+			float sizeMin;
+			float sizeMax;
+			UINT32 count;
+		};
+
+		SizeAndCount types[]
+		{
+			{ 0.02f, 0.2f, 2000 }, // Very small objects
+			{ 0.2f, 1.0f, 2000 }, // Small objects
+			{ 1.0f, 5.0f, 5000 }, // Medium sized objects
+			{ 5.0f, 30.0f, 4000 }, // Large objects
+			{ 30.0f, 100.0f, 2000 } // Very large objects
+		};
+
+		float placementExtents = 750.0f;
+		for(UINT32 i = 0; i < sizeof(types)/sizeof(types[0]); i++)
+		{
+			for (UINT32 j = 0; j < types[i].count; j++)
+			{
+				Vector3 position(
+					((rand() / (float)RAND_MAX) * 2.0f - 1.0f) * placementExtents,
+					((rand() / (float)RAND_MAX) * 2.0f - 1.0f) * placementExtents,
+					((rand() / (float)RAND_MAX) * 2.0f - 1.0f) * placementExtents
+				);
+
+				Vector3 extents(
+					types[i].sizeMin + ((rand() / (float)RAND_MAX)) * (types[i].sizeMax - types[i].sizeMin) * 0.5f,
+					types[i].sizeMin + ((rand() / (float)RAND_MAX)) * (types[i].sizeMax - types[i].sizeMin) * 0.5f,
+					types[i].sizeMin + ((rand() / (float)RAND_MAX)) * (types[i].sizeMax - types[i].sizeMin) * 0.5f
+				);
+
+				DebugOctreeElem elem;
+				elem.box = AABox(position - extents, position + extents);
+
+				UINT32 elemIdx = (UINT32)octreeData.elements.size();
+				octreeData.elements.push_back(elem);
+				octree.addElement(elemIdx);
+			}
+		}
+
+		DebugOctreeElem manualElems[3];
+		manualElems[0].box = AABox(Vector3(100.0f, 100.0f, 100.f), Vector3(110.0f, 115.0f, 110.0f));
+		manualElems[1].box = AABox(Vector3(200.0f, 100.0f, 100.f), Vector3(250.0f, 150.0f, 150.0f));
+		manualElems[2].box = AABox(Vector3(90.0f, 90.0f, 90.f), Vector3(105.0f, 105.0f, 110.0f));
+
+		
+		for(UINT32 i = 0; i < 3; i++)
+		{
+			UINT32 elemIdx = (UINT32)octreeData.elements.size();
+			octreeData.elements.push_back(manualElems[i]);
+			octree.addElement(elemIdx);
+		}
+
+		AABox queryBounds = manualElems[0].box;
+		DebugOctree::BoxIntersectIterator interIter(octree, queryBounds);
+
+		Vector<UINT32> overlapElements;
+		while(interIter.moveNext())
+		{
+			UINT32 element = interIter.getElement();
+			overlapElements.push_back(element);
+
+			// Manually check for intersections
+			LS_TEST_ASSERT(octreeData.elements[element].box.intersects(queryBounds));
+		}
+
+		// Ensure that all we have found all possible overlaps by manually testing all elements
+		UINT32 elemIdx = 0;
+		for(auto& entry : octreeData.elements)
+		{
+			if(entry.box.intersects(queryBounds))
+			{
+				auto iterFind = std::find(overlapElements.begin(), overlapElements.end(), elemIdx);
+				LS_TEST_ASSERT(iterFind != overlapElements.end());
+			}
+
+			elemIdx++;
+		}
+
+		// Ensure nothing goes wrong during element removal
+		for(auto& entry : octreeData.elements)
+			octree.removeElement(entry.octreeId);
+	}
+
+	void UtilityTestSuite::testSmallVector()
+	{
+		struct SomeElem
+		{
+			int a = 10;
+			int b = 0;
+		};
+
+		// Make sure initial construction works
+		SmallVector<SomeElem, 4> v(4);
+		LS_TEST_ASSERT(v.size() == 4);
+		LS_TEST_ASSERT(v.capacity() == 4);
+		LS_TEST_ASSERT(v[0].a == 10);
+		LS_TEST_ASSERT(v[3].a == 10);
+		LS_TEST_ASSERT(v[3].b == 0);
+
+		// Making the vector dynamic
+		v.add({3, 4});
+		LS_TEST_ASSERT(v.size() == 5);
+		LS_TEST_ASSERT(v[0].a == 10);
+		LS_TEST_ASSERT(v[3].a == 10);
+		LS_TEST_ASSERT(v[3].b == 0);
+		LS_TEST_ASSERT(v[4].a == 3);
+		LS_TEST_ASSERT(v[4].b == 4);
+
+		// Make a copy
+		SmallVector<SomeElem, 4> v2 = v;
+		LS_TEST_ASSERT(v2.size() == 5);
+		LS_TEST_ASSERT(v2[0].a == 10);
+		LS_TEST_ASSERT(v2[3].a == 10);
+		LS_TEST_ASSERT(v2[3].b == 0);
+		LS_TEST_ASSERT(v2[4].a == 3);
+		LS_TEST_ASSERT(v2[4].b == 4);
+
+		// Pop an element
+		v2.pop();
+		LS_TEST_ASSERT(v2.size() == 4);
+		LS_TEST_ASSERT(v2[0].a == 10);
+		LS_TEST_ASSERT(v2[3].a == 10);
+		LS_TEST_ASSERT(v2[3].b == 0);
+
+		// Make a static only copy
+		SmallVector<SomeElem, 4> v3 = v2;
+		LS_TEST_ASSERT(v3.size() == 4);
+		LS_TEST_ASSERT(v3.capacity() == 4);
+		LS_TEST_ASSERT(v3[0].a == 10);
+		LS_TEST_ASSERT(v3[3].a == 10);
+		LS_TEST_ASSERT(v3[3].b == 0);
+
+		// Remove an element
+		v.remove(2);
+		LS_TEST_ASSERT(v.size() == 4);
+		LS_TEST_ASSERT(v[0].a == 10);
+		LS_TEST_ASSERT(v[2].a == 10);
+		LS_TEST_ASSERT(v[3].a == 3);
+		LS_TEST_ASSERT(v[3].b == 4);
+
+		// Move a static vector
+		SmallVector<SomeElem, 4> v4 = std::move(v3);
+		LS_TEST_ASSERT(v3.size() == 0);
+		LS_TEST_ASSERT(v4.size() == 4);
+		LS_TEST_ASSERT(v4.capacity() == 4);
+		LS_TEST_ASSERT(v4[0].a == 10);
+		LS_TEST_ASSERT(v4[3].a == 10);
+		LS_TEST_ASSERT(v4[3].b == 0);
+
+		// Move a dynamic vector
+		SmallVector<SomeElem, 4> v5 = std::move(v2);
+		LS_TEST_ASSERT(v2.size() == 0);
+		LS_TEST_ASSERT(v5.size() == 4);
+		LS_TEST_ASSERT(v5[0].a == 10);
+		LS_TEST_ASSERT(v5[3].a == 10);
+		LS_TEST_ASSERT(v5[3].b == 0);
+
+		// Move a dynamic vector into a dynamic vector
+		v.add({33, 44});
+		SmallVector<SomeElem, 4> v6 = std::move(v);
+		LS_TEST_ASSERT(v.size() == 0);
+		LS_TEST_ASSERT(v6.size() == 5);
+		LS_TEST_ASSERT(v6[0].a == 10);
+		LS_TEST_ASSERT(v6[3].a == 3);
+		LS_TEST_ASSERT(v6[3].b == 4);
+		LS_TEST_ASSERT(v6[4].a == 33);
+		LS_TEST_ASSERT(v6[4].b == 44);
+	}
+
+	void UtilityTestSuite::testDynArray()
+	{
+		struct SomeElem
+		{
+			int a = 10;
+			int b = 0;
+		};
+
+		// Make sure initial construction works
+		DynArray<SomeElem> v(4);
+		LS_TEST_ASSERT(v.size() == 4);
+		LS_TEST_ASSERT(v.capacity() == 4);
+		LS_TEST_ASSERT(v[0].a == 10);
+		LS_TEST_ASSERT(v[3].a == 10);
+		LS_TEST_ASSERT(v[3].b == 0);
+
+		// Add an element
+		v.add({3, 4});
+		LS_TEST_ASSERT(v.size() == 5);
+		LS_TEST_ASSERT(v[0].a == 10);
+		LS_TEST_ASSERT(v[3].a == 10);
+		LS_TEST_ASSERT(v[3].b == 0);
+		LS_TEST_ASSERT(v[4].a == 3);
+		LS_TEST_ASSERT(v[4].b == 4);
+
+		// Make a copy
+		DynArray<SomeElem> v2 = v;
+		LS_TEST_ASSERT(v2.size() == 5);
+		LS_TEST_ASSERT(v2[0].a == 10);
+		LS_TEST_ASSERT(v2[3].a == 10);
+		LS_TEST_ASSERT(v2[3].b == 0);
+		LS_TEST_ASSERT(v2[4].a == 3);
+		LS_TEST_ASSERT(v2[4].b == 4);
+
+		// Pop an element
+		v2.pop();
+		LS_TEST_ASSERT(v2.size() == 4);
+		LS_TEST_ASSERT(v2[0].a == 10);
+		LS_TEST_ASSERT(v2[3].a == 10);
+		LS_TEST_ASSERT(v2[3].b == 0);
+
+		// Remove an element
+		v.remove(2);
+		LS_TEST_ASSERT(v.size() == 4);
+		LS_TEST_ASSERT(v[0].a == 10);
+		LS_TEST_ASSERT(v[2].a == 10);
+		LS_TEST_ASSERT(v[3].a == 3);
+		LS_TEST_ASSERT(v[3].b == 4);
+
+		// Insert an element
+		v.insert(v.begin() + 2, { 99, 100 });
+		LS_TEST_ASSERT(v.size() == 5);
+		LS_TEST_ASSERT(v[0].a == 10);
+		LS_TEST_ASSERT(v[2].a == 99);
+		LS_TEST_ASSERT(v[3].a == 10);
+		LS_TEST_ASSERT(v[4].a == 3);
+		LS_TEST_ASSERT(v[4].b == 4);
+
+		// Insert a list
+		v.insert(v.begin() + 1, {{ 55, 100 }, { 56, 100 }, { 57, 100 }});
+		LS_TEST_ASSERT(v.size() == 8);
+		LS_TEST_ASSERT(v[0].a == 10);
+		LS_TEST_ASSERT(v[1].a == 55);
+		LS_TEST_ASSERT(v[2].a == 56);
+		LS_TEST_ASSERT(v[3].a == 57);
+		LS_TEST_ASSERT(v[4].a == 10);
+		LS_TEST_ASSERT(v[5].a == 99);
+		LS_TEST_ASSERT(v[6].a == 10);
+		LS_TEST_ASSERT(v[7].a == 3);
+		LS_TEST_ASSERT(v[7].b == 4);
+
+		// Erase a range of elements
+		v.erase(v.begin() + 2, v.begin() + 5);
+		LS_TEST_ASSERT(v.size() == 5);
+		LS_TEST_ASSERT(v[0].a == 10);
+		LS_TEST_ASSERT(v[1].a == 55);
+		LS_TEST_ASSERT(v[2].a == 99);
+		LS_TEST_ASSERT(v[3].a == 10);
+		LS_TEST_ASSERT(v[4].a == 3);
+		LS_TEST_ASSERT(v[4].b == 4);
+
+		// Insert a range
+		v.insert(v.begin() + 1, v2.begin() + 1, v2.begin() + 3);
+		LS_TEST_ASSERT(v.size() == 7);
+		LS_TEST_ASSERT(v[0].a == 10);
+		LS_TEST_ASSERT(v[1].a == 10);
+		LS_TEST_ASSERT(v[2].a == 10);
+		LS_TEST_ASSERT(v[3].a == 55);
+		LS_TEST_ASSERT(v[4].a == 99);
+		LS_TEST_ASSERT(v[5].a == 10);
+		LS_TEST_ASSERT(v[6].a == 3);
+		LS_TEST_ASSERT(v[6].b == 4);
+
+		// Shrink capacity
+		v.shrink();
+		LS_TEST_ASSERT(v.size() == v.capacity());
+		LS_TEST_ASSERT(v[0].a == 10);
+		LS_TEST_ASSERT(v[1].a == 10);
+		LS_TEST_ASSERT(v[2].a == 10);
+		LS_TEST_ASSERT(v[3].a == 55);
+		LS_TEST_ASSERT(v[4].a == 99);
+		LS_TEST_ASSERT(v[5].a == 10);
+		LS_TEST_ASSERT(v[6].a == 3);
+		LS_TEST_ASSERT(v[6].b == 4);
+
+		// Move it
+		DynArray<SomeElem> v3 = std::move(v2);
+		LS_TEST_ASSERT(v2.size() == 0);
+		LS_TEST_ASSERT(v3.size() == 4);
+		LS_TEST_ASSERT(v3[0].a == 10);
+		LS_TEST_ASSERT(v3[3].a == 10);
+		LS_TEST_ASSERT(v3[3].b == 0);
+	}
+	
+	void UtilityTestSuite::testComplex()
+	{
+		Complex<float> c(10.0, 4.0);
+		LS_TEST_ASSERT(c.real() == 10.0);
+		LS_TEST_ASSERT(c.imag() == 4.0);
+
+		Complex<float> c2(15.0, 5.0);
+		LS_TEST_ASSERT(c2.real() == 15.0);
+		LS_TEST_ASSERT(c2.imag() == 5.0);
+
+		Complex<float> c3 = c + c2;
+		LS_TEST_ASSERT(c3.real() == 25.0);
+		LS_TEST_ASSERT(c3.imag() == 9.0);
+
+		Complex<float> c4 = c - c2;
+		LS_TEST_ASSERT(c4.real() == -5.0);
+		LS_TEST_ASSERT(c4.imag() == -1.0);
+
+		Complex<float> c5 = c * c2;
+		LS_TEST_ASSERT(c5.real() == 130.0);
+		LS_TEST_ASSERT(c5.imag() == 110.0);
+
+		Complex<float> c6 = c / c2;
+		LS_TEST_ASSERT(c6.real() == 0.680000007f);
+		LS_TEST_ASSERT(c6.imag() == 0.0399999991f);
+
+		LS_TEST_ASSERT(Complex<float>::abs(c) == 10.7703295f);
+		LS_TEST_ASSERT(Complex<float>::arg(c) == 0.380506366f);
+		LS_TEST_ASSERT(Complex<float>::norm(c) == 116);
+
+		Complex<float> c7 = Complex<float>::conj(c);
+		LS_TEST_ASSERT(c7.real() == 10);
+		LS_TEST_ASSERT(c7.imag() == -4);
+		c7 = 0;
+
+		c7 = Complex<float>::polar(2.0, 0.5);
+		LS_TEST_ASSERT(c7.real() == 1.75516510f);
+		LS_TEST_ASSERT(c7.imag() == 0.958851099f);
+		c7 = 0;
+
+		c7 = Complex<float>::cos(c);
+		LS_TEST_ASSERT(c7.real() == -22.9135609f);
+		LS_TEST_ASSERT(c7.imag() == 14.8462915f);
+		c7 = 0;
+
+		c7 = Complex<float>::cosh(c);
+		LS_TEST_ASSERT(c7.real() == -7198.72949f);
+		LS_TEST_ASSERT(c7.imag() == -8334.84180f);
+		c7 = 0;
+
+		c7 = Complex<float>::exp(c);
+		LS_TEST_ASSERT(c7.real() == -14397.4580f);
+		LS_TEST_ASSERT(c7.imag() == -16669.6836f);
+		c7 = 0;
+
+		c7 = Complex<float>::log(c);
+		LS_TEST_ASSERT(c7.real() == 2.37679505f);
+		LS_TEST_ASSERT(c7.imag() == 0.380506366f);
+		c7 = 0;
+
+		c7 = Complex<float>::pow(c, 2.0);
+		LS_TEST_ASSERT(c7.real() == 84.0000000f);
+		LS_TEST_ASSERT(c7.imag() == 79.9999924f);
+		c7 = 0;
+
+		c7 = Complex<float>::sin(c);
+		LS_TEST_ASSERT(c7.real() == -14.8562555f);
+		LS_TEST_ASSERT(c7.imag() == -22.8981915f);
+		c7 = 0;
+
+		c7 = Complex<float>::sinh(c);
+		LS_TEST_ASSERT(c7.real() == -7198.72900f);
+		LS_TEST_ASSERT(c7.imag() == -8334.84277f);
+		c7 = 0;
+
+		c7 = Complex<float>::sqrt(c);
+		LS_TEST_ASSERT(c7.real() == 3.22260213f);
+		LS_TEST_ASSERT(c7.imag() == 0.620616496f);
+		c7 = 0;
+	}
+}
