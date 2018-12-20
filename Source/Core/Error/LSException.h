@@ -175,7 +175,7 @@ namespace ls
 		static_assert((std::is_base_of<ls::Exception, type>::value),						\
 			"Invalid exception type (" #type ") for LS_EXCEPT macro."						\
 			" It needs to derive from ls::Exception.");										\
-		gCrashHandler().reportCrash(#type, desc, __PRETTY_FUNCTION__, __FILE__, __LINE__);	\
+		gCrashHandler().reportCrash(#type, desc, FUNCTION, __FILE__, __LINE__);	\
 		PlatformUtil::terminate(true);													\
 	}
 #endif
