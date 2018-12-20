@@ -5,6 +5,7 @@
 #include "Platform/LSPlatformDefine.h"
 #include "Platform/LSStdHeaders.h"
 #include "Platform/LSTypes.h"
+#include "Platform/LSPlatformFwd.h"
 
 #include "Allocators/LSMemoryAllocator.h"
 #include "Allocators/LSStackAlloc.h"
@@ -13,3 +14,4 @@
 #include "Allocators/LSStaticAlloc.h"
 #include "Allocators/LSPoolAlloc.h"
 #include "Allocators/LSGroupAlloc.h"
+
