@@ -67,7 +67,7 @@ namespace ls
 			printf("Negative seek.");
 			break;
 		default:
-			printf("Undefined file system exception: ", toString((UINT32)error).c_str());
+			printf("Undefined file system exception: %s", toString((UINT32)error).c_str());
 			break;
 		}
 	}
