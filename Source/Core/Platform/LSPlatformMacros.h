@@ -78,8 +78,6 @@
 #    error "Unknown COMPILER_?"
 #endif
 
-#define STATIC_ASSERT(_condition, ...) static_assert(_condition, "" __VA_ARGS__)
-
 ///
 #define MACRO_BLOCK_BEGIN for(;;) {
 #define MACRO_BLOCK_END break; }

@@ -81,9 +81,9 @@ namespace ls
     public:
         PoolAlloc()
         {
-            STATIC_ASSERT(ElemSize >= 4, "Pool allocator minimum allowed element size is 4 bytes.");
-            STATIC_ASSERT(ElemsPerBlock > 0, "Number of elements per block must be at least 1.");
-            STATIC_ASSERT(ElemsPerBlock * ActualElemSize <= UINT_MAX, "Pool allocator block size too large.");
+            static_assert(ElemSize >= 4, "Pool allocator minimum allowed element size is 4 bytes.");
+            static_assert(ElemsPerBlock > 0, "Number of elements per block must be at least 1.");
+            static_assert(ElemsPerBlock * ActualElemSize <= UINT_MAX, "Pool allocator block size too large.");
         }
         
         ~PoolAlloc()
@@ -251,7 +251,7 @@ namespace ls
         template <typename T2>
         struct AlwaysFalse : std::false_type { };
         
-        STATIC_ASSERT(AlwaysFalse<T>::value, "No global pool allocator exists for the type.");
+        static_assert(AlwaysFalse<T>::value, "No global pool allocator exists for the type.");
     };
     
     /**

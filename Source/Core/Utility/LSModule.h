@@ -74,7 +74,7 @@ namespace ls
 		template<class SubType, class ...Args>
 		static void startUp(Args &&...args)
 		{
-			STATIC_ASSERT(std::is_base_of<T, SubType>::value, "Provided type is not derived from type the Module is initialized with.");
+			static_assert(std::is_base_of<T, SubType>::value, "Provided type is not derived from type the Module is initialized with.");
 
 			if (isStartedUp())
 				assert(false && "Trying to start an already started module.");

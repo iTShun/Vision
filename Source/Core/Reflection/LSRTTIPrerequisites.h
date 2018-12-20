@@ -36,7 +36,7 @@ namespace ls
 	template<class T>
 	struct RTTIPlainType
 	{
-		STATIC_ASSERT(std::is_pod<T>::value,
+		static_assert(std::is_pod<T>::value,
 			"Provided type isn't plain-old-data. You need to specialize RTTIPlainType template in order to serialize this type. "\
 			" (Or call LS_ALLOW_MEMCPY_SERIALIZATION(type) macro if you are sure the type can be properly serialized using just memcpy.)");
 
@@ -175,7 +175,7 @@ namespace ls
 	 * @see		RTTIPlainType<T>
 	 */
 #define LS_ALLOW_MEMCPY_SERIALIZATION(type)								\
-	STATIC_ASSERT (std::is_trivially_copyable<type>()==true,			\
+	static_assert (std::is_trivially_copyable<type>()==true,			\
 						#type " is not trivially copyable");			\
 	template<> struct RTTIPlainType<type>								\
 	{	enum { id=0 }; enum { hasDynamicSize = 0 };						\
