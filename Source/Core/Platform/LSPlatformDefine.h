@@ -1,5 +1,8 @@
 #pragma once
 
+#define LS_VERSION_MAJOR    1
+#define LS_VERSION_MINOR    1
+
 #define PROFILING_ENABLED   1
 
 #if defined(DEBUG) || defined(_DEBUG)

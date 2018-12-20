@@ -6,6 +6,7 @@
 #include "FileSystem/LSFileSystem.h"
 #include "FileSystem/LSDataStream.h"
 #include "String/LSUnicode.h"
+#include "Logger/LSLogger.h"
 
 namespace ls
 {
@@ -13,62 +14,62 @@ namespace ls
 	{
 		switch (error)
 		{
-		case ERROR_FILE_NOT_FOUND:
-			printf("File at path: \"%s\" not found.", toString(path).c_str());
-			break;
-		case ERROR_PATH_NOT_FOUND:
-		case ERROR_BAD_NETPATH:
-		case ERROR_CANT_RESOLVE_FILENAME:
-		case ERROR_INVALID_DRIVE:
-			printf("Path \"%s\" not found.", toString(path).c_str());
-			break;
-		case ERROR_ACCESS_DENIED:
-			printf("Access to path \"%s\" denied.", toString(path).c_str());
-			break;
-		case ERROR_ALREADY_EXISTS:
-		case ERROR_FILE_EXISTS:
-			printf("File/folder at path \"%s\" already exists.", toString(path).c_str());
-			break;
-		case ERROR_INVALID_NAME:
-		case ERROR_DIRECTORY:
-		case ERROR_FILENAME_EXCED_RANGE:
-		case ERROR_BAD_PATHNAME:
-			printf("Invalid path string: \"%s\".", toString(path).c_str());
-			break;
-		case ERROR_FILE_READ_ONLY:
-			printf("File at path \"%s\" is read only.", toString(path).c_str());
-			break;
-		case ERROR_CANNOT_MAKE:
-			printf("Cannot create file/folder at path: \"%s\".", toString(path).c_str());
-			break;
-		case ERROR_DIR_NOT_EMPTY:
-			printf("Directory at path \"%s\" not empty.", toString(path).c_str());
-			break;
-		case ERROR_WRITE_FAULT:
-			printf("Error while writing a file at path \"%s\".", toString(path).c_str());
-			break;
-		case ERROR_READ_FAULT:
-			printf("Error while reading a file at path \"%s\".", toString(path).c_str());
-			break;
-		case ERROR_SHARING_VIOLATION:
-			printf("Sharing violation at path \"%s\".", toString(path).c_str());
-			break;
-		case ERROR_LOCK_VIOLATION:
-			printf("Lock violation at path \"%s\".", toString(path).c_str());
-			break;
-		case ERROR_HANDLE_EOF:
-			printf("End of file reached for file at path \"%s\".", toString(path).c_str());
-			break;
-		case ERROR_HANDLE_DISK_FULL:
-		case ERROR_DISK_FULL:
-			printf("Disk full.");
-			break;
-		case ERROR_NEGATIVE_SEEK:
-			printf("Negative seek.");
-			break;
-		default:
-			printf("Undefined file system exception: %s", toString((UINT32)error).c_str());
-			break;
+            case ERROR_FILE_NOT_FOUND:
+                LOGERR("File at path: \"" + toString(path) + "\" not found.");
+                break;
+            case ERROR_PATH_NOT_FOUND:
+            case ERROR_BAD_NETPATH:
+            case ERROR_CANT_RESOLVE_FILENAME:
+            case ERROR_INVALID_DRIVE:
+                LOGERR("Path \"" + toString(path) + "\" not found.");
+                break;
+            case ERROR_ACCESS_DENIED:
+                LOGERR("Access to path \"" + toString(path) + "\" denied.");
+                break;
+            case ERROR_ALREADY_EXISTS:
+            case ERROR_FILE_EXISTS:
+                LOGERR("File/folder at path \"" + toString(path) + "\" already exists.");
+                break;
+            case ERROR_INVALID_NAME:
+            case ERROR_DIRECTORY:
+            case ERROR_FILENAME_EXCED_RANGE:
+            case ERROR_BAD_PATHNAME:
+                LOGERR("Invalid path string: \"" + toString(path) + "\".");
+                break;
+            case ERROR_FILE_READ_ONLY:
+                LOGERR("File at path \"" + toString(path) + "\" is read only.");
+                break;
+            case ERROR_CANNOT_MAKE:
+                LOGERR("Cannot create file/folder at path: \"" + toString(path) + "\".");
+                break;
+            case ERROR_DIR_NOT_EMPTY:
+                LOGERR("Directory at path \"" + toString(path) + "\" not empty.");
+                break;
+            case ERROR_WRITE_FAULT:
+                LOGERR("Error while writing a file at path \"" + toString(path) + "\".");
+                break;
+            case ERROR_READ_FAULT:
+                LOGERR("Error while reading a file at path \"" + toString(path) + "\".");
+                break;
+            case ERROR_SHARING_VIOLATION:
+                LOGERR("Sharing violation at path \"" + toString(path) + "\".");
+                break;
+            case ERROR_LOCK_VIOLATION:
+                LOGERR("Lock violation at path \"" + toString(path) + "\".");
+                break;
+            case ERROR_HANDLE_EOF:
+                LOGERR("End of file reached for file at path \"" + toString(path) + "\".");
+                break;
+            case ERROR_HANDLE_DISK_FULL:
+            case ERROR_DISK_FULL:
+                LOGERR("Disk full.");
+                break;
+            case ERROR_NEGATIVE_SEEK:
+                LOGERR("Negative seek.");
+                break;
+            default:
+                LOGERR("Undefined file system exception: " + toString((UINT32)error));
+                break;
 		}
 	}
 
@@ -277,7 +278,7 @@ namespace ls
 
 		if (!win32_pathExists(pathString) || !win32_isFile(pathString))
 		{
-			printf("Attempting to open a file that doesn't exist: %s", fullPath.toString().c_str());
+			LOGWRN("Attempting to open a file that doesn't exist: " + fullPath.toString());
 			return nullptr;
 		}
 

@@ -10,7 +10,7 @@ namespace ls
 	const Color Color::Green = Color(0.0f, 1.0f, 0.0f);
 	const Color Color::Blue = Color(0.0f, 0.0f, 1.0f);
 	const Color Color::LightGray = Color(200.0f / 255.0f, 200.0f / 255.0f, 200.0f / 255.0f);
-	const Color Color::BansheeOrange = Color(1.0f, (168.0f/255.0f), 0.0f);
+	const Color Color::LSEngineOrange = Color(1.0f, (168.0f/255.0f), 0.0f);
 
 	Color Color::fromRGBA(RGBA val)
 	{

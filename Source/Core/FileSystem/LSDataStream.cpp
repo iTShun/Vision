@@ -1,5 +1,6 @@
 #include "FileSystem/LSDataStream.h"
 #include "String/LSUnicode.h"
+#include "Logger/LSLogger.h"
 
 namespace ls
 {
@@ -102,7 +103,7 @@ namespace ls
 				dataOffset = 4;
 			else if (isUTF32BE(headerBytes))
 			{
-				printf("UTF-32 big endian decoding not supported");
+				LOGWRN("UTF-32 big endian decoding not supported");
 				return u8"";
 			}
 		}
@@ -119,7 +120,7 @@ namespace ls
 				dataOffset = 2;
 			else if (isUTF16BE(headerBytes))
 			{
-				printf("UTF-16 big endian decoding not supported");
+				LOGWRN("UTF-16 big endian decoding not supported");
 				return u8"";
 			}
 		}
@@ -333,7 +334,7 @@ namespace ls
 		// Should check ensure open succeeded, in case fail for some reason.
 		if (mInStream->fail())
 		{
-			printf("Cannot open file: %s", path.toString().c_str());
+			LOGWRN("Cannot open file: " + path.toString());
 			return;
 		}
 

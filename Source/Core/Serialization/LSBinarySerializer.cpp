@@ -8,7 +8,8 @@
 #include "Reflection/LSRTTIManagedDataBlockField.h"
 #include "Serialization/LSMemorySerializer.h"
 #include "FileSystem/LSDataStream.h"
-
+#include "Logger/LSLogger.h"
+#include "Error/LSException.h"
 #include <unordered_set>
 
 /**
@@ -58,7 +59,8 @@ namespace ls
 		buffer = encodeEntry(object, objectId, buffer, bufferLength, bytesWritten, flushBufferCallback, shallow);
 		if(buffer == nullptr)
 		{
-			assert(false && "Destination buffer is null or not large enough.");
+            LS_EXCEPT(InternalErrorException,
+                      "Destination buffer is null or not large enough.");
 		}
 
 		// Encode pointed to objects and their value types
@@ -82,7 +84,8 @@ namespace ls
 					bufferLength, bytesWritten, flushBufferCallback, shallow);
 				if(buffer == nullptr)
 				{
-					assert(false && "Destination buffer is null or not large enough.");
+                    LS_EXCEPT(InternalErrorException,
+                              "Destination buffer is null or not large enough.");
 				}
 
 				foundObjectToProcess = true;
@@ -139,7 +142,7 @@ namespace ls
 
 			if(data->read(&objectMetaData, sizeof(ObjectMetaData)) != sizeof(ObjectMetaData))
 			{
-				assert(false && "Error decoding data.");
+				LS_EXCEPT(InternalErrorException, "Error decoding data.");
 			}
 
 			data->seek(data->tell() - sizeof(ObjectMetaData));
@@ -151,8 +154,8 @@ namespace ls
 
 			if (objectIsBaseClass)
 			{
-				assert(false && "Encountered a base-class object while looking for a new object. " \
-					"Base class objects are only supposed to be parts of a larger object.");
+                LS_EXCEPT(InternalErrorException, "Encountered a base-class object while looking for a new object. " \
+                          "Base class objects are only supposed to be parts of a larger object.");
 			}
 
 			SPtr<IReflectable> object = IReflectable::createInstanceFromTypeId(objectTypeId);
@@ -309,7 +312,9 @@ namespace ls
 							break;
 						}
 					default:
-						assert(false && "Error encoding data. Encountered a type I don't know how to encode.");
+                        LS_EXCEPT(InternalErrorException,
+                                  "Error encoding data. Encountered a type I don't know how to encode. Type: " + toString(UINT32(curGenericField->mType)) +
+                                  ", Is array: " + toString(curGenericField->mIsVectorType));
 					}
 				}
 				else
@@ -403,7 +408,9 @@ namespace ls
 							break;
 						}
 					default:
-						assert(false && "Error encoding data. Encountered a type I don't know how to encode.");
+                        LS_EXCEPT(InternalErrorException,
+                                  "Error encoding data. Encountered a type I don't know how to encode. Type: " + toString(UINT32(curGenericField->mType)) +
+                                  ", Is array: " + toString(curGenericField->mIsVectorType));
 					}
 				}
 			}
@@ -426,7 +433,7 @@ namespace ls
 
 		if(data->read(&objectMetaData, sizeof(ObjectMetaData)) != sizeof(ObjectMetaData))
 		{
-			assert(false && "Error decoding data.");
+			LS_EXCEPT(InternalErrorException, "Error decoding data.");
 		}
 
 		UINT32 objectId = 0;
@@ -436,8 +443,8 @@ namespace ls
 
 		if (objectIsBaseClass)
 		{
-			assert(false && "Encountered a base-class object while looking for a new object. " \
-				"Base class objects are only supposed to be parts of a larger object.");
+            LS_EXCEPT(InternalErrorException, "Encountered a base-class object while looking for a new object. " \
+                      "Base class objects are only supposed to be parts of a larger object.");
 		}
 
 		RTTITypeBase* rtti = nullptr;
@@ -484,7 +491,7 @@ namespace ls
 			int metaData = -1;
 			if(data->read(&metaData, META_SIZE) != META_SIZE)
 			{
-				assert(false && "Error decoding data.");
+				LS_EXCEPT(InternalErrorException, "Error decoding data.");
 			}
 
 			if (isObjectMetaData(metaData)) // We've reached a new object or a base class of the current one
@@ -496,7 +503,7 @@ namespace ls
 				data->seek(data->tell() - META_SIZE);
 				if (data->read(&objMetaData, sizeof(ObjectMetaData)) != sizeof(ObjectMetaData))
 				{
-					assert(false && "Error decoding data.");
+					LS_EXCEPT(InternalErrorException, "Error decoding data.");
 				}
 
 				UINT32 objId = 0;
@@ -560,17 +567,21 @@ namespace ls
 			{
 				if (!hasDynamicSize && curGenericField->getTypeSize() != fieldSize)
 				{
-					assert(false && "Data type mismatch. Type size stored in file and actual type size don't match.");
+                    LS_EXCEPT(InternalErrorException,
+                              "Data type mismatch. Type size stored in file and actual type size don't match. ("
+                              + toString(curGenericField->getTypeSize()) + " vs. " + toString(fieldSize) + ")");
 				}
 
 				if (curGenericField->mIsVectorType != isArray)
 				{
-					assert(false && "Data type mismatch. One is array, other is a single type.");
+                    LS_EXCEPT(InternalErrorException,
+                              "Data type mismatch. One is array, other is a single type.");
 				}
 
 				if (curGenericField->mType != fieldType)
 				{
-					assert(false && "Data type mismatch. Field types don't match.");
+                    LS_EXCEPT(InternalErrorException,
+                              "Data type mismatch. Field types don't match. " + toString(UINT32(curGenericField->mType)) + " vs. " + toString(UINT32(fieldType)));
 				}
 			}
 
@@ -579,7 +590,7 @@ namespace ls
 			{
 				if(data->read(&arrayNumElems, NUM_ELEM_FIELD_SIZE) != NUM_ELEM_FIELD_SIZE)
 				{
-					assert(false && "Error decoding data.");
+					LS_EXCEPT(InternalErrorException, "Error decoding data.");
 				}
 
 				if(curGenericField != nullptr)
@@ -596,7 +607,7 @@ namespace ls
 						int childObjectId = 0;
 						if(data->read(&childObjectId, COMPLEX_TYPE_FIELD_SIZE) != COMPLEX_TYPE_FIELD_SIZE)
 						{
-							assert(false && "Error decoding data.");
+							LS_EXCEPT(InternalErrorException, "Error decoding data.");
 						}
 
 						if (curField != nullptr)
@@ -607,7 +618,8 @@ namespace ls
 							{
 								if(childObjectId != 0)
 								{
-									printf("When deserializing, object ID: %d was found but no such object was contained in the file.", childObjectId);
+                                    LOGWRN("When deserializing, object ID: " + toString(childObjectId) +
+                                           " was found but no such object was contained in the file.");
 								}
 
 								curField->setArrayValue(rttiInstance, output.get(), i, nullptr);
@@ -621,7 +633,7 @@ namespace ls
 								{
 									if (objToDecode.decodeInProgress)
 									{
-										printf("Detected a circular reference when decoding. Referenced object's fields " \
+										LOGWRN("Detected a circular reference when decoding. Referenced object's fields " \
 											"will be resolved in an undefined order (i.e. one of the objects will not " \
 											"be fully deserialized when assigned to its field). Use RTTI_Flag_WeakRef to " \
 											"get rid of this warning and tell the system which of the objects is allowed " \
@@ -698,7 +710,9 @@ namespace ls
 					break;
 				}
 				default:
-					assert(false && "Error decoding data. Encountered a type I don't know how to decode.");
+                    LS_EXCEPT(InternalErrorException,
+                              "Error decoding data. Encountered a type I don't know how to decode. Type: " + toString(UINT32(fieldType)) +
+                              ", Is array: " + toString(isArray));
 				}
 			}
 			else
@@ -712,7 +726,7 @@ namespace ls
 					int childObjectId = 0;
 					if(data->read(&childObjectId, COMPLEX_TYPE_FIELD_SIZE) != COMPLEX_TYPE_FIELD_SIZE)
 					{
-						assert(false && "Error decoding data.");
+						LS_EXCEPT(InternalErrorException, "Error decoding data.");
 					}
 
 					if (curField != nullptr)
@@ -723,7 +737,8 @@ namespace ls
 						{
 							if(childObjectId != 0)
 							{
-								printf("When deserializing, object ID: %d was found but no such object was contained in the file.", childObjectId);
+                                LOGWRN("When deserializing, object ID: " + toString(childObjectId) +
+                                       " was found but no such object was contained in the file.");
 							}
 
 							curField->setValue(rttiInstance, output.get(), nullptr);
@@ -737,7 +752,7 @@ namespace ls
 							{
 								if (objToDecode.decodeInProgress)
 								{
-									printf("Detected a circular reference when decoding. Referenced object's fields " \
+									LOGWRN("Detected a circular reference when decoding. Referenced object's fields " \
 										"will be resolved in an undefined order (i.e. one of the objects will not " \
 										"be fully deserialized when assigned to its field). Use RTTI_Flag_WeakRef to " \
 										"get rid of this warning and tell the system which of the objects is allowed " \
@@ -817,7 +832,7 @@ namespace ls
 					UINT32 dataBlockSize = 0;
 					if(data->read(&dataBlockSize, DATA_BLOCK_TYPE_FIELD_SIZE) != DATA_BLOCK_TYPE_FIELD_SIZE)
 					{
-						assert(false && "Error decoding data.");
+						LS_EXCEPT(InternalErrorException, "Error decoding data.");
 					}
 
 					// Data block data
@@ -846,7 +861,9 @@ namespace ls
 					break;
 				}
 				default:
-					assert(false && "Error decoding data. Encountered a type I don't know how to decode.");
+                    LS_EXCEPT(InternalErrorException,
+                              "Error decoding data. Encountered a type I don't know how to decode. Type: " + toString(UINT32(fieldType)) +
+                              ", Is array: " + toString(isArray));
 				}
 			}
 		}
@@ -901,7 +918,8 @@ namespace ls
 	{
 		if(isObjectMetaData(encodedData))
 		{
-			assert(false && "Meta data represents an object description but is trying to be decoded as a field descriptor.");
+            LS_EXCEPT(InternalErrorException,
+                      "Meta data represents an object description but is trying to be decoded as a field descriptor.");
 		}
 
 		terminator = (encodedData & 0x40) != 0;
@@ -931,7 +949,7 @@ namespace ls
 
 		if(objId > 1073741823)
 		{
-			assert(false && "Object ID is larger than we can store (max 30 bits).");
+			LS_EXCEPT(InvalidParametersException, "Object ID is larger than we can store (max 30 bits): " + toString(objId));
 		}
 
 		ObjectMetaData metaData;
@@ -944,7 +962,8 @@ namespace ls
 	{
 		if(!isObjectMetaData(encodedData.objectMeta))
 		{
-			assert(false && "Meta data represents a field description but is trying to be decoded as an object descriptor.");
+            LS_EXCEPT(InternalErrorException,
+                      "Meta data represents a field description but is trying to be decoded as an object descriptor.");
 		}
 
 		objId = (encodedData.objectMeta >> 2) & 0x3FFFFFFF;

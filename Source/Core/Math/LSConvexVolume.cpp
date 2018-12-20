@@ -3,6 +3,7 @@
 #include "Math/LSSphere.h"
 #include "Math/LSPlane.h"
 #include "Math/LSMath.h"
+#include "Error/LSException.h"
 
 namespace ls
 {
@@ -142,7 +143,7 @@ namespace ls
 	{
 		if(whichPlane >= mPlanes.size())
 		{
-			assert(false && "Requested plane does not exist in this volume.");
+			LS_EXCEPT(InvalidParametersException, "Requested plane does not exist in this volume.");
 		}
 
 		return mPlanes[whichPlane];

@@ -3,6 +3,7 @@
 #include "Platform/LSPlatform.h"
 #include "Reflection/LSRTTIField.h"
 #include "Reflection/LSIReflectable.h"
+#include "Error/LSException.h"
 
 namespace ls
 {
@@ -153,7 +154,8 @@ namespace ls
 
 			if(!setter)
 			{
-				assert(false && "Specified field has no setter.");
+                LS_EXCEPT(InternalErrorException,
+                          "Specified field (" + mName + ") has no setter.");
 			}
 
 			InterfaceType* rttiObject = static_cast<InterfaceType*>(rtti);
@@ -170,7 +172,8 @@ namespace ls
 
 			if(!arraySetter)
 			{
-				assert(false && "Specified field has no setter.");
+                LS_EXCEPT(InternalErrorException,
+                          "Specified field (" + mName + ") has no setter.");
 			}
 
 			InterfaceType* rttiObject = static_cast<InterfaceType*>(rtti);
@@ -198,7 +201,8 @@ namespace ls
 
 			if(!arraySetSize)
 			{
-				assert(false && "Specified field has no array size setter.");
+                LS_EXCEPT(InternalErrorException,
+                          "Specified field (" + mName + ") has no array size setter.");
 			}
 
 			InterfaceType* rttiObject = static_cast<InterfaceType*>(rtti);

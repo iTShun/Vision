@@ -2,6 +2,7 @@
 
 #include "Platform/LSPlatform.h"
 #include "Reflection/LSRTTIField.h"
+#include "Error/LSException.h"
 
 namespace ls
 {
@@ -70,7 +71,8 @@ namespace ls
 		/** @copydoc RTTIField::getArraySize */
 		UINT32 getArraySize(RTTITypeBase* rtti, void* object) override
 		{
-			assert(false && "Data block types don't support arrays.");
+            LS_EXCEPT(InternalErrorException,
+                     "Data block types don't support arrays.");
 
 			return 0;
 		}
@@ -78,7 +80,8 @@ namespace ls
 		/** @copydoc RTTIField::setArraySize */
 		void setArraySize(RTTITypeBase* rtti, void* object, UINT32 size) override
 		{
-			assert(false && "Data block types don't support arrays.");
+            LS_EXCEPT(InternalErrorException,
+                      "Data block types don't support arrays.");
 		}
 
 		/** @copydoc RTTIManagedDataBlockFieldBase::getValue */

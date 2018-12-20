@@ -2,6 +2,7 @@
 
 #include "Platform/LSPlatform.h"
 #include "Reflection/LSRTTIField.h"
+#include "Error/LSException.h"
 
 namespace ls
 {
@@ -33,7 +34,9 @@ namespace ls
 
 			/*if(mType.id != SerializableType<DataType>().id)
 			{
-				assert(false && "Invalid field type.");
+                 LS_EXCEPT(InternalErrorException,
+                     "Invalid field type.",
+                     "SerializableSimpleTypeFieldBase::checkType()");
 			}*/
 		}
 		
@@ -219,7 +222,7 @@ namespace ls
 
 			if(!arraySetSize)
 			{
-				assert(false && "Specified field has no array size setter.");
+				LS_EXCEPT(InternalErrorException, "Specified field (" + mName + ") has no array size setter.");
 			}
 
 			InterfaceType* rttiObject = static_cast<InterfaceType*>(rtti);
@@ -267,7 +270,8 @@ namespace ls
 
 			if(!setter)
 			{
-				assert(false && "Specified field has no setter.");
+                LS_EXCEPT(InternalErrorException,
+                          "Specified field (" + mName + ") has no setter.");
 			}
 
 			(rttiObject->*setter)(castObject, value);
@@ -287,7 +291,8 @@ namespace ls
 
 			if(!arraySetter)
 			{
-				assert(false && "Specified field has no setter.");
+                LS_EXCEPT(InternalErrorException,
+                          "Specified field (" + mName + ") has no setter.");
 			}
 
 			(rttiObject->*arraySetter)(castObject, index, value);

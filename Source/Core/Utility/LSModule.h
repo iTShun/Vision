@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Allocators/LSMemoryAllocator.h"
+#include "Error/LSException.h"
 
 namespace ls
 {
@@ -24,12 +25,14 @@ namespace ls
 		{
 			if (!isStartedUp())
 			{
-				assert(false && "Trying to access a module but it hasn't been started up yet.");
+                LS_EXCEPT(InternalErrorException,
+                          "Trying to access a module but it hasn't been started up yet.");
 			}
 
 			if (isDestroyed())
 			{
-				assert(false && "Trying to access a destroyed module.");
+                LS_EXCEPT(InternalErrorException,
+                          "Trying to access a destroyed module.");
 			}
 
 			return *_instance();
@@ -43,12 +46,14 @@ namespace ls
 		{
 			if (!isStartedUp())
 			{
-				assert(false && "Trying to access a module but it hasn't been started up yet.");
+                LS_EXCEPT(InternalErrorException,
+                          "Trying to access a module but it hasn't been started up yet.");
 			}
 
 			if (isDestroyed())
 			{
-				assert(false && "Trying to access a destroyed module.");
+                LS_EXCEPT(InternalErrorException,
+                          "Trying to access a destroyed module.");
 			}
 
 			return _instance();
@@ -59,7 +64,7 @@ namespace ls
 		static void startUp(Args &&...args)
 		{
 			if (isStartedUp())
-				assert(false && "Trying to start an already started module.");
+				LS_EXCEPT(InternalErrorException, "Trying to start an already started module.");
 
 			_instance() = ls_new<T>(std::forward<Args>(args)...);
 			isStartedUp() = true;
@@ -77,7 +82,7 @@ namespace ls
 			static_assert(std::is_base_of<T, SubType>::value, "Provided type is not derived from type the Module is initialized with.");
 
 			if (isStartedUp())
-				assert(false && "Trying to start an already started module.");
+				LS_EXCEPT(InternalErrorException, "Trying to start an already started module.");
 
 			_instance() = ls_new<SubType>(std::forward<Args>(args)...);
 			isStartedUp() = true;
@@ -90,12 +95,14 @@ namespace ls
 		{
 			if (isDestroyed())
 			{
-				assert(false && "Trying to shut down an already shut down module.");
+                LS_EXCEPT(InternalErrorException,
+                          "Trying to shut down an already shut down module.");
 			}
 
 			if (!isStartedUp())
 			{
-				assert(false && "Trying to shut down a module which was never started.");
+                LS_EXCEPT(InternalErrorException,
+                          "Trying to shut down a module which was never started.");
 			}
 
 			((Module*)_instance())->onShutDown();

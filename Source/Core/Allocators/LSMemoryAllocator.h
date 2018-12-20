@@ -324,7 +324,7 @@ namespace ls
      *  @{
      */
     
-    /** Allocator for the standard library that internally uses Banshee memory allocator. */
+    /** Allocator for the standard library that internally uses LSEngine memory allocator. */
     template <class T, class Alloc = GenAlloc>
     class StdAlloc
     {

@@ -1,6 +1,7 @@
 #include "Reflection/LSIReflectable.h"
 #include "Reflection/LSRTTIType.h"
 #include "Private/RTTI/LSIReflectableRTTI.h"
+#include "Error/LSException.h"
 
 namespace ls
 {
@@ -8,7 +9,8 @@ namespace ls
 	{
 		if(_isTypeIdDuplicate(rttiType->getRTTIId()))
 		{
-			assert(false && "RTTI type has a duplicate ID");
+            LS_EXCEPT(InternalErrorException, "RTTI type \"" + rttiType->getRTTIName() +
+                      "\" has a duplicate ID: " + toString(rttiType->getRTTIId()));
 		}
 
 		getAllRTTITypes()[rttiType->getRTTIId()] = rttiType;
@@ -81,7 +83,9 @@ namespace ls
 						(myReflectablePtrField->getFlags() & RTTI_Flag_WeakRef) == 0 &&
 						(otherReflectablePtrField->getFlags() & RTTI_Flag_WeakRef) == 0)
 					{
-						assert(false && "Found circular reference on RTTI type. Either remove one of the references or mark it as a weak reference when defining the RTTI field.");
+                        LS_EXCEPT(InternalErrorException, "Found circular reference on RTTI type: " + myType->getRTTIName()
+                                  + " to type: " + otherType->getRTTIName() + ". Either remove one of the references or mark it"
+                                  + " as a weak reference when defining the RTTI field.");
 					}
 				}
 			}

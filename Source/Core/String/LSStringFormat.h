@@ -194,7 +194,7 @@ namespace ls
         /**    Helper method that "converts" a narrow string to a narrow string (simply a pass through). */
         static std::string toString(const std::string& param) { return param; }
         
-        /**    Helper method that converts a Banshee narrow string to a standard narrow string. */
+        /**    Helper method that converts a LSEngine narrow string to a standard narrow string. */
         static std::string toString(const String& param)
         {
             return std::string(param.c_str());
@@ -231,7 +231,7 @@ namespace ls
         /**    Helper method that "converts" a wide string to a wide string (simply a pass through). */
         static std::wstring toWString(const std::wstring& param) { return param; }
         
-        /**    Helper method that converts a Banshee wide string to a standard wide string. */
+        /**    Helper method that converts a LSEngine wide string to a standard wide string. */
         static std::wstring toWString(const WString& param)
         {
             return std::wstring(param.c_str());

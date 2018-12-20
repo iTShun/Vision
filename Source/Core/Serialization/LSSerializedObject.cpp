@@ -1,6 +1,8 @@
 #include "LSSerializedObject.h"
 #include "Private/RTTI/LSSerializedObjectRTTI.h"
 #include "Serialization/LSBinarySerializer.h"
+#include "Logger/LSLogger.h"
+#include "Error/LSException.h"
 using namespace ls;
 
 namespace ls
@@ -165,7 +167,7 @@ namespace ls
 									{
 										if (objToDecode.decodeInProgress)
 										{
-											printf("Detected a circular reference when decoding. Referenced object fields " \
+											LOGWRN("Detected a circular reference when decoding. Referenced object fields " \
 												"will be resolved in an undefined order (i.e. one of the objects will not " \
 												"be fully deserialized when assigned to its field). Use RTTI_Flag_WeakRef to " \
 												"get rid of this warning and tell the system which of the objects is allowed " \
@@ -259,7 +261,7 @@ namespace ls
 								{
 									if (objToDecode.decodeInProgress)
 									{
-										printf("Detected a circular reference when decoding. Referenced object's fields " \
+										LOGWRN("Detected a circular reference when decoding. Referenced object's fields " \
 											"will be resolved in an undefined order (i.e. one of the objects will not " \
 											"be fully deserialized when assigned to its field). Use RTTI_Flag_WeakRef to " \
 											"get rid of this warning and tell the system which of the objects is allowed " \
@@ -460,7 +462,8 @@ namespace ls
 							break;
 						}
 						default:
-							assert(false && "Error encoding data. Encountered a type I don't know how to encode.");
+                            LS_EXCEPT(InternalErrorException,
+                                      "Error encoding data. Encountered a type I don't know how to encode. Type: " + toString(UINT32(curGenericField->mType)) + ", Is array: " + toString(curGenericField->mIsVectorType));
 						}
 					}
 					else
@@ -533,7 +536,9 @@ namespace ls
 							break;
 						}
 						default:
-							assert(false && "Error encoding data. Encountered a type I don't know how to encode.");
+                            LS_EXCEPT(InternalErrorException,
+                                      "Error encoding data. Encountered a type I don't know how to encode. Type: " + toString(UINT32(curGenericField->mType)) +
+                                      ", Is array: " + toString(curGenericField->mIsVectorType));
 						}
 					}
 
@@ -621,7 +626,7 @@ namespace ls
 		if (cloneData)
 		{
 			if(stream->isFile())
-				printf("Cloning a file stream. Streaming is disabled and stream data will be loaded into memory.");
+				LOGWRN("Cloning a file stream. Streaming is disabled and stream data will be loaded into memory.");
 
 			UINT8* data = (UINT8*)ls_alloc(size);
 			stream->read(data, size);

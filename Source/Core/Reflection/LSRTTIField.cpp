@@ -1,4 +1,5 @@
 #include "Reflection/LSRTTIField.h"
+#include "Error/LSException.h"
 
 namespace ls
 {
@@ -6,7 +7,9 @@ namespace ls
 	{
 		if(!isPlainType())
 		{
-			assert(false && "Invalid field type.");
+            LS_EXCEPT(InternalErrorException,
+                      "Invalid field type. Needed: Plain type. Got: " + toString(mIsVectorType) + ", " +
+                      toString(isPlainType()) + ", " + toString(isReflectableType()) + ", " + toString(isDataBlockType()) + ", " + toString(isReflectablePtrType()));
 		}
 
 		checkIsArray(array);
@@ -16,7 +19,9 @@ namespace ls
 	{
 		if(!isDataBlockType())
 		{
-			assert(false && "Invalid field type.");
+            LS_EXCEPT(InternalErrorException,
+                      "Invalid field type. Needed: Data block. Got: " + toString(mIsVectorType) + ", " +
+                      toString(isPlainType()) + ", " + toString(isReflectableType()) + ", " + toString(isDataBlockType()) + ", " + toString(isReflectablePtrType()));
 		}
 	}
 
@@ -24,7 +29,9 @@ namespace ls
 	{
 		if(!isReflectableType())
 		{
-			assert(false && "Invalid field type.");
+            LS_EXCEPT(InternalErrorException,
+                      "Invalid field type. Needed: Complex type. Got: " + toString(mIsVectorType) + ", " +
+                      toString(isPlainType()) + ", " + toString(isReflectableType()) + ", " + toString(isDataBlockType()) + ", " + toString(isReflectablePtrType()));
 		}
 
 		checkIsArray(array);
@@ -34,7 +41,9 @@ namespace ls
 	{
 		if(!isReflectablePtrType())
 		{
-			assert(false && "Invalid field type.");
+            LS_EXCEPT(InternalErrorException,
+                      "Invalid field type. Needed: Complex ptr type. Got: " + toString(mIsVectorType) + ", " +
+                      toString(isPlainType()) + ", " + toString(isReflectableType()) + ", " + toString(isDataBlockType()) + ", " + toString(isReflectablePtrType()));
 		}
 
 		checkIsArray(array);
@@ -44,12 +53,14 @@ namespace ls
 	{
 		if(array && !mIsVectorType)
 		{
-			assert(false && "Invalid field type. Needed an array type but got a single type.");
+            LS_EXCEPT(InternalErrorException,
+                      "Invalid field type. Needed an array type but got a single type.");
 		}
 
 		if(!array && mIsVectorType)
 		{
-			assert(false && "Invalid field type. Needed a single type but got an array type.");
+            LS_EXCEPT(InternalErrorException,
+                      "Invalid field type. Needed a single type but got an array type.");
 		}
 	}
 }

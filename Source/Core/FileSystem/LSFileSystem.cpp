@@ -1,4 +1,5 @@
 #include "FileSystem/LSFileSystem.h"
+#include "Logger/LSLogger.h"
 
 namespace ls
 {
@@ -28,7 +29,7 @@ namespace ls
 						FileSystem::remove(destinationPath);
 					else
 					{
-						printf("Copy operation failed because another file already exists at the new path: \"%s\"", destinationPath.toString().c_str());
+						LOGWRN("Copy operation failed because another file already exists at the new path: \"" + destinationPath.toString() + "\"");
 						return;
 					}
 				}
@@ -96,7 +97,7 @@ namespace ls
 				FileSystem::remove(newPath);
 			else
 			{
-				printf("Move operation failed because another file already exists at the new path: \"%s\"", newPath.toString().c_str());
+				LOGWRN("Move operation failed because another file already exists at the new path: \"" + newPath.toString() + "\"");
 				return;
 			}
 		}

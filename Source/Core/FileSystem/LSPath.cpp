@@ -1,5 +1,6 @@
 #include "LSPath.h"
 #include "String/LSUnicode.h"
+#include "Error/LSException.h"
 
 namespace ls
 {
@@ -376,7 +377,8 @@ namespace ls
 	{
 		if (idx >= (UINT32)mDirectories.size())
 		{
-			assert(false && "Index out of range.");
+            LS_EXCEPT(InvalidParametersException, "Index out of range: " + ls::toString(idx) + ". Valid range: [0, " +
+                      ls::toString((UINT32)mDirectories.size() - 1) + "]");
 		}
 
 		return mDirectories[idx];
@@ -403,7 +405,7 @@ namespace ls
 
 	void Path::throwInvalidPathException(const String& path) const
 	{
-		assert(false && "Incorrectly formatted path provided.");
+		LS_EXCEPT(InvalidParametersException, "Incorrectly formatted path provided: " + path);
 	}
 
 	String Path::buildWindows() const

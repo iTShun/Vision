@@ -3,6 +3,8 @@
 #include "Serialization/LSBinarySerializer.h"
 #include "FileSystem/LSFileSystem.h"
 #include "FileSystem/LSDataStream.h"
+#include "Logger/LSLogger.h"
+#include "Error/LSException.h"
 #include <numeric>
 
 using namespace std::placeholders;
@@ -20,7 +22,7 @@ namespace ls
 		mOutputStream.open(fileLocation.toPlatformString().c_str(), std::ios::out | std::ios::binary);
 		if (mOutputStream.fail())
 		{
-			printf("Failed to save file: \"%s\". Error: %s.", fileLocation.toString().c_str(), strerror(errno));
+			LOGWRN("Failed to save file: \"" + fileLocation.toString() + "\". Error: " + strerror(errno) + ".");
 		}
 	}
 
@@ -66,7 +68,8 @@ namespace ls
 
 		if (mInputStream->size() > std::numeric_limits<UINT32>::max())
 		{
-			assert(false && "File size is larger that UINT32 can hold. Ask a programmer to use a bigger data type.");
+            LS_EXCEPT(InternalErrorException,
+                      "File size is larger that UINT32 can hold. Ask a programmer to use a bigger data type.");
 		}
 	}
 

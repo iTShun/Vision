@@ -1,4 +1,5 @@
 #include "Reflection/LSRTTIType.h"
+#include "Error/LSException.h"
 
 namespace ls
 {
@@ -14,7 +15,8 @@ namespace ls
 
 		if(foundElement == mFields.end())
 		{
-			assert(false && "Cannot find a field with the specified name");
+            LS_EXCEPT(InternalErrorException,
+                      "Cannot find a field with the specified name: " + name);
 		}
 
 		return *foundElement;
@@ -34,7 +36,8 @@ namespace ls
 	{
 		if(field == nullptr)
 		{
-			assert(false && "Field argument can't be null.");
+            LS_EXCEPT(InvalidParametersException,
+                      "Field argument can't be null.");
 		}
 
 		int uniqueId = field->mUniqueId;
@@ -42,7 +45,8 @@ namespace ls
 
 		if(foundElementById != mFields.end())
 		{
-			assert(false && "Field with the same ID already exists.");
+            LS_EXCEPT(InternalErrorException,
+                      "Field with the same ID already exists.");
 		}
 
 		String& name = field->mName;
@@ -50,7 +54,8 @@ namespace ls
 
 		if(foundElementByName != mFields.end())
 		{
-			assert(false && "Field with the same name already exists.");
+            LS_EXCEPT(InternalErrorException,
+                      "Field with the same name already exists.");
 		}
 
 		mFields.push_back(field);
@@ -71,7 +76,7 @@ namespace ls
 
 		SPtr<IReflectable> newRTTIObject() override
 		{
-			assert(false && "Cannot instantiate an abstract class.");
+			LS_EXCEPT(InternalErrorException, "Cannot instantiate an abstract class.");
 			return nullptr;
 		}
 	};

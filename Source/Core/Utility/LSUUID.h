@@ -16,7 +16,7 @@ namespace ls
 		/** Initializes an empty UUID. */
 		constexpr UUID() = default;
 
-		/** Initializes an UUID using Banshee's UUID representation. */
+		/** Initializes an UUID using LSEngine's UUID representation. */
 		constexpr UUID(UINT32 data1, UINT32 data2, UINT32 data3, UINT32 data4)
 			: mData{ data1, data2, data3, data4 }
 		{ }

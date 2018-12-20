@@ -8,6 +8,7 @@
 #include "Math/LSVector3.h"
 #include "Math/LSVector4.h"
 #include "Math/LSVector2I.h"
+#include "Error/LSException.h"
 
 namespace ls
 {
@@ -715,6 +716,6 @@ namespace ls
 
 	void __string_throwDataOverflowException()
 	{
-		assert(false && "Data overflow! Size doesn't fit into 32 bits.");
+		LS_EXCEPT(InternalErrorException, "Data overflow! Size doesn't fit into 32 bits.");
 	}
 }
