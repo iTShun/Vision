@@ -3,6 +3,9 @@
 #if PLATFORM_WINDOWS
 
 #include <windows.h>
+#include <iphlpapi.h>
+#include <VersionHelpers.h>
+#include <intrin.h>
 
 namespace ls
 {
@@ -15,6 +18,28 @@ namespace ls
         else
             TerminateProcess(GetCurrentProcess(), 0);
     }
+
+	typedef LONG NTSTATUS, *PNTSTATUS;
+	typedef NTSTATUS(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+
+	RTL_OSVERSIONINFOW GetRealOSVersion()
+	{
+		HMODULE handle = GetModuleHandleW(L"ntdll.dll");
+		if (handle)
+		{
+			RtlGetVersionPtr rtlGetVersionFunc = (RtlGetVersionPtr)GetProcAddress(handle, "RtlGetVersion");
+			if (rtlGetVersionFunc != nullptr)
+			{
+				RTL_OSVERSIONINFOW rovi = { 0 };
+				rovi.dwOSVersionInfoSize = sizeof(rovi);
+				if (rtlGetVersionFunc(&rovi) == 0)
+					return rovi;
+			}
+		}
+
+		RTL_OSVERSIONINFOW rovi = { 0 };
+		return rovi;
+	}
     
     SystemInfo PlatformUtil::getSystemInfo()
     {
@@ -78,7 +103,7 @@ namespace ls
         
         output.memoryAmountMb = (UINT32)(statex.ullTotalPhys / (1024 * 1024));
         
-        if (BS_ARCH_TYPE == BS_ARCHITECTURE_x86_64)
+        if (ARCH_64BIT)
             output.osIs64Bit = true;
         else
         {
@@ -97,6 +122,11 @@ namespace ls
         
         return output;
     }
+
+	void PlatformUtil::sleep(UINT32 duration)
+	{
+		Sleep((DWORD)duration);
+	}
 }
 
 #endif // PLATFORM_WINDOWS

@@ -50,6 +50,15 @@ namespace ls
         
         /** @} */
         
+		/**
+		* Causes the current thread to pause execution for the specified amount of time.
+		*
+		* @param[in]	duration	Duration in milliseconds. Providing zero will give up the current time-slice.
+		*
+		* @note	This method relies on timer granularity being set to 1 millisecond. If it is not, you can expect
+		*			this method to potentially take significantly longer if you are providing it with low ms values (<10).
+		*/
+		static void sleep(UINT32 duration);
     private:
         static GPUInfo sGPUInfo;
     };

@@ -148,22 +148,6 @@ namespace ls
 			: Exception("InternalErrorException", inDescription, inSource, inFile, inLine) {}
 	};
 
-	/** Exception for signaling an error in a rendering API. */
-	class RenderingAPIException : public Exception
-	{
-	public:
-		RenderingAPIException(const String& inDescription, const String& inSource, const char* inFile, long inLine)
-			: Exception("RenderingAPIException", inDescription, inSource, inFile, inLine) {}
-	};
-
-	/** Exception for signaling an error in an unit test. */
-	class UnitTestException : public Exception
-	{
-	public:
-		UnitTestException(const String& inDescription, const String& inSource, const char* inFile, long inLine)
-			: Exception("UnitTestException", inDescription, inSource, inFile, inLine) {}
-	};
-
 	/**
 	 * Macro for throwing exceptions that will automatically fill out function name, file name and line number of the
 	 * exception.

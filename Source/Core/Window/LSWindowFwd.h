@@ -23,27 +23,41 @@ namespace ls
 	typedef Flags<WindowStyle> WindowStyleFlags;
 	LS_FLAGS_OPERATORS(WindowStyle)
 
-	/** Types of events that a RenderWindow can be notified of. */
+	////////////////////////////////////////////////////////////
+	/// \brief Enumeration of the different types of events
+	///
+	////////////////////////////////////////////////////////////
 	enum class WindowEventType
 	{
-		/** Triggered when window size changes. */
-		Resized,
-		/** Triggered when window position changes. */
-		Moved,
-		/** Triggered when window receives input focus. */
-		FocusReceived,
-		/** Triggered when window loses input focus. */
-		FocusLost,
-		/** Triggered when the window is minimized (iconified). */
-		Minimized,
-		/** Triggered when the window is expanded to cover the current screen. */
-		Maximized,
-		/** Triggered when the window leaves minimized or maximized state. */
-		Restored,
-		/** Triggered when the mouse pointer leaves the window area. */
-		MouseLeft,
-		/** Triggered when the user wants to close the window. */
-		CloseRequested,
+		Closed,					///< The window requested to be closed (no data)
+		Resized,                ///< The window was resized (data in event.size)
+		Moved,					///< The window was position changes. (data in event.position)
+		LostFocus,              ///< The window lost the focus (no data)
+		GainedFocus,            ///< The window gained the focus (no data)
+		Minimized,				///< The window is minimized (iconified). (no data)
+		Maximized,				///< The window is expanded to cover the current screen. (no data)
+		Restored,				///< The window leaves minimized or maximized state. (no data)
+		TextEntered,            ///< A character was entered (data in event.text)
+		KeyPressed,             ///< A key was pressed (data in event.key)
+		KeyReleased,            ///< A key was released (data in event.key)
+		MouseWheelMoved,        ///< The mouse wheel was scrolled (data in event.mouseWheel) (deprecated)
+		MouseWheelScrolled,     ///< The mouse wheel was scrolled (data in event.mouseWheelScroll)
+		MouseButtonPressed,     ///< A mouse button was pressed (data in event.mouseButton)
+		MouseButtonReleased,    ///< A mouse button was released (data in event.mouseButton)
+		MouseMoved,             ///< The mouse cursor moved (data in event.mouseMove)
+		MouseEntered,           ///< The mouse cursor entered the area of the window (no data)
+		MouseLeft,              ///< The mouse cursor left the area of the window (no data)
+		JoystickButtonPressed,  ///< A joystick button was pressed (data in event.joystickButton)
+		JoystickButtonReleased, ///< A joystick button was released (data in event.joystickButton)
+		JoystickMoved,          ///< The joystick moved along an axis (data in event.joystickMove)
+		JoystickConnected,      ///< A joystick was connected (data in event.joystickConnect)
+		JoystickDisconnected,   ///< A joystick was disconnected (data in event.joystickConnect)
+		TouchBegan,             ///< A touch event began (data in event.touch)
+		TouchMoved,             ///< A touch moved (data in event.touch)
+		TouchEnded,             ///< A touch event ended (data in event.touch)
+		SensorChanged,          ///< A sensor value changed (data in event.sensor)
+
+		Count                   ///< Keep last -- the total number of event types
 	};
 
 	typedef Flags<WindowEventType> WindowEventTypeFlags;

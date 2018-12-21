@@ -7,7 +7,7 @@
 #   include <windows.h>
 #   include <iostream>
 
-void logToIDEConsole(const bs::String& message)
+void logToIDEConsole(const ls::String& message)
 {
     OutputDebugString(message.c_str());
     OutputDebugString("\n");

@@ -32,7 +32,7 @@ namespace ls
 			win32Mode.dmDriverExtra = 0;
 			for (int count = 0; EnumDisplaySettings(NULL, count, &win32Mode); ++count)
 			{
-				// Convert to sf::VideoMode
+				// Convert to ls::VideoMode
 				VideoMode mode(win32Mode.dmPelsWidth, win32Mode.dmPelsHeight, win32Mode.dmBitsPerPel);
 
 				// Add it only if it is not already in the array
