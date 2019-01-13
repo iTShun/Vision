@@ -6,7 +6,7 @@
 #include <condition_variable>
 #include "SpinLock.h"
 
-/** @addtogroup Threading
+/** @addtogroup Thread
  *  @{
  */
 

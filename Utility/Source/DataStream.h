@@ -1,8 +1,7 @@
 #pragma once
 
+#include "Path.h"
 #include <istream>
-#include "Allocator.h"
-#include "String.h"
 
 namespace Utility
 {

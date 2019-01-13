@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Utility.h"
+#include "Config.h"
+#include "Types.h"
+#include "Str.h"
 
 namespace Utility
 {

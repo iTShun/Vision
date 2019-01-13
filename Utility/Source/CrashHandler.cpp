@@ -1,5 +1,6 @@
-#include "Utility.h"
 #include "CrashHandler.h"
+#include "FileSystem.h"
+#include "Debug.h"
 
 namespace Utility
 {
@@ -8,10 +9,41 @@ namespace Utility
 	const String CrashHandler::sFatalErrorMsg =
 		"A fatal error occurred and the program has to terminate!";
 
-	CrashHandler& gCrashHandler()
-	{
-		return CrashHandler::instance();
-	}
+    CrashHandler& gCrashHandler()
+    {
+        return CrashHandler::instance();
+    }
+    
+    CrashHandler::CrashHandler()
+    {
+        
+    }
+    
+    CrashHandler::~CrashHandler()
+    {
+        
+    }
+    
+    void CrashHandler::reportCrash(const String& type,
+                                   const String& description,
+                                   const String& function,
+                                   const String& file,
+                                   UINT32 line) const
+    {
+        
+    }
+    
+#if PLATFORM_WINDOWS
+    int CrashHandler::reportCrash(void* exceptionData) const
+    {
+        return 0;
+    }
+#endif
+    
+    String CrashHandler::getStackTrace()
+    {
+        return String("");
+    }
 
 	const Path& CrashHandler::getCrashFolder()
 	{
@@ -21,7 +53,7 @@ namespace Utility
 		static bool first = true;
 		if (first) 
 		{
-			//FileSystem::createDir(path);
+            FileSystem::createDir(path);
 			first = false;
 		}
 
@@ -36,7 +68,7 @@ namespace Utility
 		errorMessage << "\n\nStack trace: \n";
 		errorMessage << stackTrace;
 
-		gLogger().logError(errorMessage.str());
+        gDebug().logError(errorMessage.str());
 	}
 
 	void CrashHandler::logErrorAndStackTrace(const String& type, const String& description, const String& function,
@@ -52,6 +84,11 @@ namespace Utility
 
 	void CrashHandler::saveCrashLog() const
 	{
-		gLogger().saveLog(getCrashFolder() + sCrashLogName);
+        gDebug().saveLog(getCrashFolder() + sCrashLogName);
 	}
+    
+    String CrashHandler::getCrashTimestamp()
+    {
+        return String("");
+    }
 }

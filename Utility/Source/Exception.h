@@ -1,7 +1,8 @@
 #pragma once
 
 #include "StdHeaders.h"
-#include "String.h"
+#include "Str.h"
+#include "CrashHandler.h"
 
 namespace Utility
 {

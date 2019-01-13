@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Config.h"
-
 // Common
-#include "Platform.h"
-#include "Macros.h"
+#include "Config.h"
 #include "Types.h"
 #include "StdHeaders.h"
 #include "General.h"
+
+// Thread
+#include "Thread.h"
 
 // Allocators
 #include "Allocator.h"
@@ -17,17 +17,19 @@
 #include "StaticAllocator.h"
 
 // String
-#include "String.h"
+#include "Str.h"
 #include "Unicode.h"
+
+// Event
+#include "Event.h"
+
+// Error
+#include "Exception.h"
+
+// Debug
+#include "Debug.h"
 
 // FileSystem
 #include "Path.h"
 #include "DataStream.h"
 #include "FileSystem.h"
-
-// Thread
-#include "Thread.h"
-
-// Error
-#include "Exception.h"
-#include "CrashHandler.h"

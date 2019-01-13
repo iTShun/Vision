@@ -1,5 +1,7 @@
-#include "Utility.h"
 #include "DataStream.h"
+#include "StackAllocator.h"
+#include "Unicode.h"
+#include "Debug.h"
 
 namespace Utility
 {
@@ -102,7 +104,7 @@ namespace Utility
 				dataOffset = 4;
 			else if (isUTF32BE(headerBytes))
 			{
-				LOGWRN("UTF-32 big endian decoding not supported");
+                LOGWRN("UTF-32 big endian decoding not supported");
 				return u8"";
 			}
 		}
@@ -119,7 +121,7 @@ namespace Utility
 				dataOffset = 2;
 			else if (isUTF16BE(headerBytes))
 			{
-				LOGWRN("UTF-16 big endian decoding not supported");
+                LOGWRN("UTF-16 big endian decoding not supported");
 				return u8"";
 			}
 		}
@@ -333,7 +335,7 @@ namespace Utility
 		// Should check ensure open succeeded, in case fail for some reason.
 		if (mInStream->fail())
 		{
-			LOGWRN("Cannot open file: " + path.toString());
+            LOGWRN("Cannot open file: " + path.toString());
 			return;
 		}
 

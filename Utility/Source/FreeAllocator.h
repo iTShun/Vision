@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Types.h"
+
 namespace Utility
 {
 	/** @addtogroup Memory-Internal

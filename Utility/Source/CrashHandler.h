@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Config.h"
 #include "Allocator.h"
-#include "String.h"
 #include "Path.h"
 
 #define LS_MAX_STACKTRACE_DEPTH 200

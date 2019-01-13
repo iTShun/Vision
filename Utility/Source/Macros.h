@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Platform.h"
+
 #if defined(_DEBUG) || defined(DEBUG)
 #	define DEBUG_MODE 1
 #else
@@ -13,17 +15,6 @@
 #   define SYMBOL_EXPORT __attribute__((visibility("default")))
 #   define SYMBOL_IMPORT
 #endif // PLATFORM_WINDOWS
-
-// DLL export
-#ifdef STATIC_LIB
-#	define UTILITY_EXPORT
-#else
-#	ifdef UTILITY_EXPORTS
-#		define UTILITY_EXPORT	SYMBOL_EXPORT
-#	else
-#		define UTILITY_EXPORT	SYMBOL_IMPORT
-#	endif
-#endif
 
 ///
 #define STRINGIZE(_x) STRINGIZE_(_x)

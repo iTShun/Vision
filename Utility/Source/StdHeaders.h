@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Platform.h"
+
 #ifdef __BORLANDC__
 #   define __STD_ALGORITHM
 #endif
@@ -10,7 +12,6 @@
 #include <ctime>
 #include <cstring>
 #include <cstdarg>
-#include <cstddef>
 #include <cmath>
 
 #include <memory>
@@ -44,10 +45,10 @@
 #include <sstream>
 
 extern "C" {
-    
+
 #   include <sys/types.h>
 #   include <sys/stat.h>
-    
+
 }
 
 #if PLATFORM_WINDOWS
@@ -60,19 +61,20 @@ extern "C" {
 
 #if PLATFORM_LINUX
 extern "C" {
-    
+
 #   include <unistd.h>
 #   include <dlfcn.h>
-    
+
 }
 #endif
 
 #if PLATFORM_OSX
 extern "C" {
-    
+
 #   include <unistd.h>
 #   include <sys/param.h>
 #   include <CoreFoundation/CoreFoundation.h>
-    
+
 }
 #endif
+

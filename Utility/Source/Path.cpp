@@ -1,5 +1,6 @@
-#include "Utility.h"
 #include "Path.h"
+#include "Unicode.h"
+#include "Exception.h"
 
 namespace Utility
 {
@@ -376,8 +377,8 @@ namespace Utility
 	{
 		if (idx >= (UINT32)mDirectories.size())
 		{
-			EXCEPT(InvalidParametersException, "Index out of range: " + Utility::toString(idx) + ". Valid range: [0, " +
-				Utility::toString((UINT32)mDirectories.size() - 1) + "]");
+            EXCEPT(InvalidParametersException, "Index out of range: " + Utility::toString(idx) + ". Valid range: [0, " +
+                Utility::toString((UINT32)mDirectories.size() - 1) + "]");
 		}
 
 		return mDirectories[idx];
@@ -404,7 +405,7 @@ namespace Utility
 
 	void Path::throwInvalidPathException(const String& path) const
 	{
-		EXCEPT(InvalidParametersException, "Incorrectly formatted path provided: " + path);
+        EXCEPT(InvalidParametersException, "Incorrectly formatted path provided: " + path);
 	}
 
 	String Path::buildWindows() const
