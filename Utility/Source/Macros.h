@@ -1,6 +1,29 @@
 #pragma once
 
-#include "Utility.h"
+#if defined(_DEBUG) || defined(DEBUG)
+#	define DEBUG_MODE 1
+#else
+#	define DEBUG_MODE 0
+#endif
+
+#if PLATFORM_WINDOWS
+#   define SYMBOL_EXPORT __declspec(dllexport)
+#   define SYMBOL_IMPORT __declspec(dllimport)
+#else
+#   define SYMBOL_EXPORT __attribute__((visibility("default")))
+#   define SYMBOL_IMPORT
+#endif // PLATFORM_WINDOWS
+
+// DLL export
+#ifdef STATIC_LIB
+#	define UTILITY_EXPORT
+#else
+#	ifdef UTILITY_EXPORTS
+#		define UTILITY_EXPORT	SYMBOL_EXPORT
+#	else
+#		define UTILITY_EXPORT	SYMBOL_IMPORT
+#	endif
+#endif
 
 ///
 #define STRINGIZE(_x) STRINGIZE_(_x)
