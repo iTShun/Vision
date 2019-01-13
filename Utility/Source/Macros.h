@@ -13,6 +13,7 @@
 ///
 #define FILE_LINE_LITERAL "" __FILE__ "(" STRINGIZE(__LINE__) "): "
 
+#define ALIGNOF(_type) __alignof(_type)
 
 #if defined(__has_feature)
 #    define CLANG_HAS_FEATURE(_x) __has_feature(_x)
