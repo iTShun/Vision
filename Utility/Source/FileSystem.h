@@ -123,7 +123,7 @@ namespace Utility
 		 * @param[in]	fullPath	Full path to a file or a folder.
 		 */
 		static std::time_t getLastModifiedTime(const Path& fullPath);
-
+        
 		/** Returns the path to the currently working directory. */
 		static Path getWorkingDirectoryPath();
 

@@ -4,8 +4,8 @@
 #include "Allocator.h"
 #include "Path.h"
 
-#define LS_MAX_STACKTRACE_DEPTH 200
-#define LS_MAX_STACKTRACE_NAME_BYTES 1024
+#define MAX_STACKTRACE_DEPTH 200
+#define MAX_STACKTRACE_NAME_BYTES 1024
 
 namespace Utility
 {
