@@ -399,6 +399,62 @@ namespace Utility
     template <typename K, typename V, typename H = std::hash<K>, typename C = std::equal_to<K>, typename A = StdAlloc<std::pair<const K, V>, FrameAllocator>>
     using FrameUnorderedMap = std::unordered_map < K, V, H, C, A >;
     
+    /** @addtogroup Memory-Internal
+     *  @{
+     */
+    
+    extern THREAD_LOCAL FrameAllocator* _GlobalFrameAllocator;
+    
+    /**
+     * Specialized memory allocator implementations that allows use of a global frame allocator in normal
+     * new/delete/free/dealloc operators.
+     */
+    template<>
+    class MemoryAllocator<FrameAllocator>
+    {
+    public:
+        /** @copydoc MemoryAllocator::allocate */
+        static void* allocate(size_t bytes)
+        {
+            return FrameAlloc((UINT32)bytes);
+        }
+        
+        /** @copydoc MemoryAllocator::allocateAligned */
+        static void* allocateAligned(size_t bytes, size_t alignment)
+        {
+            return FrameAllocAligned((UINT32)bytes, (UINT32)alignment);
+        }
+        
+        /** @copydoc MemoryAllocator::free */
+        static void free(void* ptr)
+        {
+            FrameFree(ptr);
+        }
+        
+        /** @copydoc MemoryAllocator::freeAligned */
+        static void freeAligned(void* ptr)
+        {
+            FrameFreeAligned(ptr);
+        }
+    };
+    
+    /** @} */
     /** @} */
 }
 
+////////////////////////////////////////////////////////////
+///
+/// Usage example:
+/// \code
+/// FrameAllocator alloc;
+/// alloc.markFrame(); // Mark a new frame
+/// UINT8* buf1 = alloc.alloc(1024);
+/// UINT8* buf2 = alloc.alloc(512);
+/// // do something with buf1
+/// // do something with buf2
+/// alloc.free(buf1);
+/// alloc.free(buf2);
+/// alloc.clear();
+/// \endcode
+///
+////////////////////////////////////////////////////////////

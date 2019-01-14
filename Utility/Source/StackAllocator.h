@@ -494,3 +494,21 @@ namespace Utility
 
 	/** @} */
 }
+
+////////////////////////////////////////////////////////////
+///
+/// Usage example:
+/// \code
+/// MemStack::beginThread();
+///
+/// UINT8* buf1 = (UINT8*)StackAlloc(1024);
+/// UINT8* buf2 = (UINT8*)StackAlloc(512);
+/// // do something with buf1
+/// // do something with buf2
+/// StackFree(buf2);  // Must free buf2 first!
+/// StackFree(buf1);
+///
+/// MemStack::endThread();
+/// \endcode
+///
+////////////////////////////////////////////////////////////
