@@ -29,6 +29,9 @@ namespace Utility
             PostQuitMessage(0);
         else
             TerminateProcess(GetCurrentProcess(), 0);
+#else
+		// TODOPORT - Support clean exit by sending the main window a quit message
+		exit(0);
 #endif
     }
     

@@ -5,10 +5,18 @@
 #   include <windows.h>
 #   include <iostream>
 
+#	include "Unicode.h"
+
 void logToIDEConsole(const Utility::String& message)
 {
-    OutputDebugString(message.c_str());
-    OutputDebugString("\n");
+#	ifdef UNICODE
+	Utility::WString msg = Utility::UTF8::toWide(message);
+    OutputDebugString(msg.c_str());
+    OutputDebugString(L"\n");
+#else
+	OutputDebugString(message.c_str());
+	OutputDebugString("\n");
+#endif
     
     // Also default output in case we're running without debugger attached
     std::cout << message << std::endl;

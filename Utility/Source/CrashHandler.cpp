@@ -32,7 +32,7 @@ namespace Utility
 		"A fatal error occurred and the program has to terminate!";
 
 #   if PLATFORM_WINDOWS
-    struct Data
+    struct CrashHandler::Data
     {
         Mutex mutex;
     };
@@ -42,8 +42,6 @@ namespace Utility
         Path filePath;
         EXCEPTION_POINTERS* exceptionData;
     };
-    
-    Data* gData = nullptr;
     
     UINT32 win32_getRawStackTrace(CONTEXT context, UINT64 stackTrace[MAX_STACKTRACE_DEPTH]);
     String win32_getStackTrace(CONTEXT context, UINT32 skip = 0);
@@ -66,7 +64,7 @@ namespace Utility
     CrashHandler::CrashHandler()
     {
 #   if PLATFORM_WINDOWS
-        gData = New<Data>();
+        m = New<Data>();
 #   else
         struct sigaction action;
         sigemptyset(&action.sa_mask);
@@ -87,7 +85,7 @@ namespace Utility
     CrashHandler::~CrashHandler()
     {
 #   if PLATFORM_WINDOWS
-        Delete(gData);
+        Delete(m);
 #   else
         
 #   endif
@@ -122,7 +120,7 @@ namespace Utility
     }
     
 #if PLATFORM_WINDOWS
-    int CrashHandler::reportCrash(void* exceptionData) const
+    int CrashHandler::reportCrash(void* exceptionDataPtr) const
     {
         EXCEPTION_POINTERS* exceptionData = (EXCEPTION_POINTERS*)exceptionDataPtr;
         
@@ -384,7 +382,7 @@ namespace Utility
      * @param[in]    skip        Number of bottom-most call stack entries to skip.
      * @return                    String containing the call stack with each function on its own line.
      */
-    String win32_getStackTrace(CONTEXT context, UINT32 skip = 0)
+    String win32_getStackTrace(CONTEXT context, UINT32 skip)
     {
         UINT64 rawStackTrace[MAX_STACKTRACE_DEPTH];
         UINT32 numEntries = win32_getRawStackTrace(context, rawStackTrace);

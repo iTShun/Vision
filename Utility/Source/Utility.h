@@ -4,7 +4,9 @@
 #include "Config.h"
 #include "Types.h"
 #include "StdHeaders.h"
-#include "General.h"
+#include "Utils.h"
+#include "NonCopyable.h"
+#include "Flags.h"
 
 // Thread
 #include "Thread.h"
@@ -33,3 +35,4 @@
 #include "Path.h"
 #include "DataStream.h"
 #include "FileSystem.h"
+

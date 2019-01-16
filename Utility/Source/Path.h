@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Config.h"
-#include "General.h"
+#include "Utils.h"
 #include "Str.h"
 
 namespace Utility
